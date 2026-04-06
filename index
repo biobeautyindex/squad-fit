@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Squad Fit Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg4:#222222;
+  --border:#2a2a2a;--border2:#333333;
+  --text:#f0f0f0;--text2:#888888;--text3:#555555;
+  --accent:#c8f135;--accent2:#a8d420;
+  --accent-dim:rgba(200,241,53,0.12);--accent-dim2:rgba(200,241,53,0.06);
+  --blue:#4fc3f7;--blue-dim:rgba(79,195,247,0.1);
+  --orange:#ff8c42;--orange-dim:rgba(255,140,66,0.1);
+  --pink:#f06292;--pink-dim:rgba(240,98,146,0.1);
+  --purple:#ce93d8;--purple-dim:rgba(206,147,216,0.1);
+  --teal:#4db6ac;--teal-dim:rgba(77,182,172,0.1);
+  --red:#ef5350;--red-dim:rgba(239,83,80,0.1);
+  --radius:12px;--radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center}
+.setup-logo{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.04em;color:var(--accent);margin-bottom:6px}
+.setup-tag{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:40px}
+.setup-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:100%;max-width:420px;text-align:left}
+.setup-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;margin-bottom:6px;color:var(--text)}
+.setup-sub{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.setup-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;font-size:13px;color:var(--text2)}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent-dim);color:var(--accent);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* ── MEMBER SELECT ── */
+#member-select-screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px}
+.select-logo{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:.04em;color:var(--accent);margin-bottom:6px}
+.select-tag{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:44px}
+.member-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px;width:100%;max-width:660px;margin-bottom:28px}
+.member-tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px 14px;text-align:center;cursor:pointer;transition:all .2s;user-select:none}
+.member-tile:hover{border-color:var(--accent);transform:translateY(-2px)}
+.member-tile:active{transform:scale(.96)}
+.tile-av{width:52px;height:52px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600}
+.tile-name{font-size:14px;font-weight:500;color:var(--text)}
+.tile-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.add-tile{border-style:dashed}
+.add-tile:hover{color:var(--accent)}
+.add-icon{width:52px;height:52px;border-radius:50%;background:var(--bg3);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--text3)}
+
+/* ── APP SHELL ── */
+#app-shell{display:none}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:215px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border)}
+.wordmark{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--accent)}
+.tagline{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.sidebar-who{display:flex;align-items:center;gap:9px;padding:12px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s}
+.sidebar-who:hover{background:var(--bg3)}
+.sw-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0}
+.sw-info{flex:1;min-width:0}
+.sw-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw-hint{font-size:10px;color:var(--text3)}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 18px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent;user-select:none}
+.nav-item:hover{color:var(--text);background:var(--bg3)}
+.nav-item.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-dim2)}
+.nav-icon{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{background:var(--accent);color:#0a0a0a;font-size:9px;font-weight:700;padding:1px 5px;border-radius:999px;margin-left:auto}
+.main{margin-left:215px;flex:1;padding:26px 28px;max-width:calc(100% - 215px)}
+.page{display:none;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:.03em;color:var(--text);line-height:1}
+.page-sub{font-size:12px;color:var(--text2);margin-top:4px;margin-bottom:22px}
+.section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:9px;margin-top:16px}
+.section-label:first-child{margin-top:0}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:13px}
+.card-hi{border-left:3px solid var(--accent)}
+
+/* ── METRICS ── */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.metric-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:5px}
+.metric-val{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.02em;line-height:1}
+.c-accent{color:var(--accent)}.c-blue{color:var(--blue)}.c-orange{color:var(--orange)}.c-pink{color:var(--pink)}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;font-size:9px;font-weight:500;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.b-fitness{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(79,195,247,.2)}
+.b-nutrition{background:var(--accent-dim);color:var(--accent2);border:1px solid rgba(200,241,53,.2)}
+.b-hydration{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(77,182,172,.2)}
+.b-mental{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(206,147,216,.2)}
+.b-sleep{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(255,140,66,.2)}
+.b-habits{background:var(--pink-dim);color:var(--pink);border:1px solid rgba(240,98,146,.2)}
+
+/* ── PROGRESS ── */
+.pbar{height:6px;border-radius:3px;background:var(--bg4);overflow:hidden;flex:1}
+.pfill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;user-select:none}
+.btn:hover{background:var(--bg3)}
+.btn:active{transform:scale(.97)}
+.btn-accent{background:var(--accent);color:#0a0a0a;border-color:var(--accent);font-weight:600}
+.btn-accent:hover{background:var(--accent2)}
+.btn-ghost{border-color:transparent;color:var(--text2)}
+.btn-ghost:hover{color:var(--text);background:var(--bg3);border-color:var(--border)}
+.btn-danger{border-color:var(--red-dim);color:var(--red)}
+.btn-danger:hover{background:var(--red-dim)}
+.btn-full{width:100%}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:11px}
+.form-label{display:block;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:4px}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+input::placeholder{color:var(--text3)}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── HABIT ROWS ── */
+.habit-row{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border)}
+.habit-row:last-child{border-bottom:none}
+.check-btn{width:24px;height:24px;min-width:24px;border-radius:7px;border:1.5px solid var(--border2);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.check-btn:hover{border-color:var(--accent)}
+.check-btn.done{background:var(--accent);border-color:var(--accent)}
+.check-btn.done svg{display:block}
+.check-btn svg{display:none;width:13px;height:13px}
+.habit-text{flex:1;min-width:0}
+.habit-name{font-size:13px;font-weight:500;color:var(--text)}
+.habit-name.struck{color:var(--text3);text-decoration:line-through}
+.habit-detail{font-size:11px;color:var(--text3);margin-top:1px}
+.cross-badge{font-size:9px;padding:1px 6px;border-radius:999px;background:rgba(200,241,53,.1);color:var(--accent2);border:1px solid rgba(200,241,53,.2);margin-left:5px;white-space:nowrap}
+
+/* ── DOTS ── */
+.dots{display:flex;gap:3px}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot-on{background:var(--accent)}.dot-off{background:var(--bg4)}.dot-today{background:var(--blue)}
+
+/* ── LEADERBOARD ── */
+.lb-row{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--border)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{font-family:'Bebas Neue',sans-serif;font-size:20px;width:22px;text-align:center;color:var(--text3)}
+.rank-1{color:#fbbf24}.rank-2{color:#94a3b8}.rank-3{color:#cd7c54}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;flex-shrink:0}
+.lb-pts{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--accent)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── CHALLENGES ── */
+.ch-tab{background:transparent;border:none;color:var(--text3);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;padding:7px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.ch-tab:hover{color:var(--text2)}
+.ch-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.ch-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px}
+.ch-card.joined{border-left:3px solid var(--accent)}
+.ch-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;color:var(--text);line-height:1}
+.hist-done{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:2px 9px;border-radius:999px;background:rgba(200,241,53,.1);color:var(--accent);border:1px solid rgba(200,241,53,.2)}
+.hist-del{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:2px 9px;border-radius:999px;background:var(--red-dim);color:var(--red);border:1px solid rgba(239,83,80,.2)}
+
+/* ── PRESETS / CAT TAGS ── */
+.preset-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.preset-chip{padding:5px 12px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.preset-chip:hover{border-color:var(--accent);color:var(--accent)}
+.preset-chip.selected{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.cat-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.cat-tag{padding:4px 11px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.cat-tag.sel-fitness{background:var(--blue-dim);color:var(--blue);border-color:rgba(79,195,247,.3)}
+.cat-tag.sel-nutrition{background:var(--accent-dim);color:var(--accent2);border-color:rgba(200,241,53,.3)}
+.cat-tag.sel-hydration{background:var(--teal-dim);color:var(--teal);border-color:rgba(77,182,172,.3)}
+.cat-tag.sel-mental{background:var(--purple-dim);color:var(--purple);border-color:rgba(206,147,216,.3)}
+.cat-tag.sel-sleep{background:var(--orange-dim);color:var(--orange);border-color:rgba(255,140,66,.3)}
+.cat-tag.sel-habits{background:var(--pink-dim);color:var(--pink);border-color:rgba(240,98,146,.3)}
+
+/* ── COLOR PICKER ── */
+.color-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.cswatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s}
+.cswatch:hover{transform:scale(1.15)}
+.cswatch.sel{border-color:var(--text);transform:scale(1.1)}
+
+/* ── FOOD SEARCH ── */
+.food-wrap{position:relative;margin-bottom:10px}
+.food-results{position:absolute;top:100%;left:0;right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);z-index:50;max-height:240px;overflow-y:auto;margin-top:3px;display:none}
+.food-results.open{display:block}
+.food-item{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.food-item:last-child{border-bottom:none}
+.food-item:hover{background:var(--bg3)}
+.food-item-name{font-size:13px;font-weight:500;color:var(--text)}
+.food-item-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.cal-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.cal-stat{text-align:center;background:var(--bg3);border-radius:var(--radius-sm);padding:9px}
+.cal-stat-num{font-family:'Bebas Neue',sans-serif;font-size:20px;line-height:1}
+.cal-stat-label{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:500;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:24px;width:100%;max-width:380px;animation:fadeIn .18s ease}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.03em;margin-bottom:16px;color:var(--text)}
+
+/* ── MEMBER CARDS ── */
+.member-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+
+/* ── LOADING ── */
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:32px;color:var(--text3);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:36px 16px;color:var(--text3)}
+.empty-title{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.empty-sub{font-size:12px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--accent);color:#0a0a0a;font-weight:600;font-size:13px;padding:10px 16px;border-radius:var(--radius-sm);z-index:999;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* ── MOBILE ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom, 8px);z-index:200;justify-content:space-around}
+.mnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 6px;color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:.05em;min-width:48px}
+.mnav-item.active{color:var(--accent)}
+.mnav-item svg{width:20px;height:20px}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0;max-width:100%;padding:16px 14px 80px}
+  .metric-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .mobile-nav{display:flex}
+  .form-grid-2{grid-template-columns:1fr}
+  .two-col{grid-template-columns:1fr!important}
+  .page-title{font-size:28px}
+}
+/* ── PIN PAD ── */
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;transition:all .15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-dot.error{background:var(--red);border-color:var(--red)}
+.pin-key{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:18px;font-weight:500;font-family:'DM Sans',sans-serif;padding:14px;border-radius:var(--radius-sm);cursor:pointer;transition:all .15s}
+.pin-key:hover{background:var(--bg4);border-color:var(--accent)}
+.pin-key:active{transform:scale(.93);background:var(--accent);color:#0a0a0a;border-color:var(--accent)}
+.pin-key-ghost{background:transparent;border-color:transparent;color:var(--text2);font-size:14px}
+.pin-key-ghost:hover{background:var(--bg3);border-color:var(--border)}
+.admin-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:600;padding:2px 7px;border-radius:999px;background:rgba(200,241,53,.15);color:var(--accent);border:1px solid rgba(200,241,53,.3);text-transform:uppercase;letter-spacing:.05em}
+/* ── PROGRESS ── */
+.prog-range-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 12px;border-radius:999px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.prog-range-btn:hover{border-color:var(--accent);color:var(--accent)}
+.prog-range-btn.active{background:var(--accent);color:#0a0a0a;border-color:var(--accent);font-weight:600}
+.heatmap-grid{display:flex;gap:3px}
+.heatmap-col{display:flex;flex-direction:column;gap:3px}
+.heatmap-cell{width:12px;height:12px;border-radius:2px;cursor:pointer;transition:transform .1s}
+.heatmap-cell:hover{transform:scale(1.3)}
+.streak-table-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.streak-table-row:last-child{border-bottom:none}
+.streak-bar-wrap{flex:1;height:5px;border-radius:3px;background:var(--bg4);overflow:hidden}
+.streak-bar-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .6s ease}
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div id="setup-screen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center;background:#0a0a0a">
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:.04em;color:#c8f135;margin-bottom:8px">Squad Fit</div>
+  <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:.12em;margin-bottom:48px">Challenge Tracker</div>
+  <div id="setup-spinner" style="width:36px;height:36px;border:3px solid #222;border-top-color:#c8f135;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:16px"></div>
+  <div id="setup-msg" style="font-size:13px;color:#555;margin-bottom:16px">Loading...</div>
+  <button id="setup-retry-btn" onclick="init()" style="display:none;background:#c8f135;color:#0a0a0a;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;font-family:sans-serif;cursor:pointer">Tap to retry</button>
+  <input type="text" id="sb-url" style="display:none">
+  <input type="text" id="sb-key" style="display:none">
+  <p id="setup-error" style="display:none"></p>
+</div>
+
+<!-- ══ MEMBER SELECT ══ -->
+<div id="member-select-screen">
+  <div class="select-logo">Squad Fit</div>
+  <div class="select-tag">Challenge Tracker</div>
+  <div style="font-size:17px;font-weight:500;color:var(--text);margin-bottom:6px" id="select-prompt">Who are you?</div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:24px">Tap your name to enter · New here? Add yourself below</div>
+  <div class="member-grid" id="member-grid"></div>
+
+  <!-- SELF REGISTER BOX -->
+  <div style="width:100%;max-width:660px;margin-top:8px">
+    <div id="self-reg-collapsed" style="text-align:center">
+      <button onclick="openSelfReg()" style="background:transparent;border:1px dashed #333;color:#555;padding:10px 24px;border-radius:8px;font-size:13px;font-family:sans-serif;cursor:pointer;transition:all .2s"
+        onmouseover="this.style.borderColor='#c8f135';this.style.color='#c8f135'"
+        onmouseout="this.style.borderColor='#333';this.style.color='#555'">
+        + I'm new — add me to the squad
+      </button>
+    </div>
+    <div id="self-reg-form" style="display:none;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:20px">
+      <div style="font-size:15px;font-weight:600;color:#f0f0f0;margin-bottom:4px">Join the squad</div>
+      <div style="font-size:12px;color:#555;margin-bottom:16px">Pick a name and color — you'll appear on the leaderboard for everyone</div>
+      <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:5px">Your name</label>
+      <input type="text" id="self-reg-name" placeholder="Enter your name" maxlength="20"
+        oninput="updateSelfRegPreview()"
+        style="width:100%;background:#1a1a1a;border:1px solid #333;color:#f0f0f0;padding:9px 11px;border-radius:8px;font-size:14px;font-family:sans-serif;box-sizing:border-box;margin-bottom:14px">
+      <label style="display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:8px">Pick your color</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="self-reg-colors"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <div id="self-reg-preview-av" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0"></div>
+        <div>
+          <div id="self-reg-preview-name" style="font-size:14px;font-weight:500;color:#f0f0f0">Your name here</div>
+          <div style="font-size:11px;color:#555">How you'll appear to the squad</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="submitSelfReg()"
+          style="flex:1;background:#c8f135;color:#0a0a0a;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:700;font-family:sans-serif;cursor:pointer">
+          Join squad
+        </button>
+        <button onclick="closeSelfReg()"
+          style="background:transparent;border:1px solid #333;color:#888;padding:11px 16px;border-radius:8px;font-size:13px;font-family:sans-serif;cursor:pointer">
+          Cancel
+        </button>
+      </div>
+      <p id="self-reg-error" style="color:#ef5350;font-size:12px;margin-top:8px;display:none"></p>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--text3);margin-top:20px">Your data syncs across all devices in real time</p>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="app-shell">
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <div class="wordmark">Squad Fit</div>
+        <div class="tagline">Challenge Tracker</div>
+      </div>
+      <div class="sidebar-who" onclick="goHome()" id="sidebar-who">
+        <div class="sw-av" id="sb-av" style="width:30px;height:30px;font-size:12px"></div>
+        <div class="sw-info">
+          <div class="sw-name" id="sb-name"></div>
+          <div class="sw-hint">Tap to switch</div>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-item active" onclick="showPage('today')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Today
+        </div>
+        <div class="nav-item" onclick="showPage('calories')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          Calories
+        </div>
+        <div class="nav-item" onclick="showPage('leaderboard')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          Leaderboard
+          <span class="nav-badge" id="live-badge" style="display:none">LIVE</span>
+        </div>
+        <div class="nav-item" onclick="showPage('challenges')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Challenges
+        </div>
+        <div class="nav-item" onclick="showPage('build')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+          Build Challenge
+        </div>
+        <div class="nav-item" onclick="showPage('squad')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Squad
+        </div>
+        <div class="nav-item" onclick="showPage('progress')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          My Progress
+        </div>
+      </div>
+    </nav>
+
+    <main class="main">
+      <!-- TODAY -->
+      <div class="page active" id="page-today">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+          <div><div class="page-title" id="today-title">Today</div><div class="page-sub" id="today-sub" style="margin-bottom:0"></div></div>
+          <div id="prog-ring"></div>
+        </div>
+        <div class="metric-grid" id="today-metrics" style="margin-top:18px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px" class="two-col">
+          <div>
+            <div class="card">
+              <div class="section-label">My habit checklist</div>
+              <div id="habit-checklist"></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-label">This week's streaks</div>
+              <div id="streak-display"></div>
+            </div>
+            <div class="card" id="ch-progress-card"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALORIES -->
+      <div class="page" id="page-calories">
+        <div class="page-title">Calories</div>
+        <div class="page-sub" id="cal-sub">Log your food</div>
+        <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:14px" class="two-col">
+          <div>
+            <div class="card">
+              <div class="section-label">Today's summary</div>
+              <div style="display:flex;justify-content:center;padding:6px 0 14px" id="cal-ring"></div>
+              <div class="cal-summary" id="cal-summary"></div>
+              <div class="form-group"><label class="form-label">Daily calorie goal</label><input type="number" id="cal-goal-input" placeholder="e.g. 2000" min="500"></div>
+              <button class="btn btn-accent btn-full btn-sm" onclick="saveCalGoal()">Save goal</button>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-label">Search & log food</div>
+              <div class="food-wrap">
+                <input type="text" id="food-search" placeholder="Search USDA database (e.g. chicken, banana)..." autocomplete="off" oninput="foodDebounce()">
+                <div class="food-results" id="food-results"></div>
+              </div>
+              <div style="display:flex;gap:7px;margin-bottom:12px">
+                <input type="number" id="food-qty" value="1" min="0.01" step="0.25" style="width:70px;text-align:center;flex-shrink:0" oninput="updateFoodPreview()">
+                <select id="food-unit" style="flex:1" onchange="updateFoodPreview()">
+                  <optgroup label="Weight">
+                    <option value="100g">100g</option>
+                    <option value="g">grams (g)</option>
+                    <option value="oz">ounces (oz)</option>
+                    <option value="lb">pounds (lb)</option>
+                  </optgroup>
+                  <optgroup label="Volume">
+                    <option value="cup">cup</option>
+                    <option value="half_cup">½ cup</option>
+                    <option value="third_cup">⅓ cup</option>
+                    <option value="quarter_cup">¼ cup</option>
+                    <option value="tbsp">tablespoon (tbsp)</option>
+                    <option value="tsp">teaspoon (tsp)</option>
+                    <option value="fl_oz">fl oz</option>
+                    <option value="ml">milliliter (ml)</option>
+                    <option value="liter">liter</option>
+                  </optgroup>
+                  <optgroup label="Serving">
+                    <option value="serving" selected>serving</option>
+                    <option value="piece">piece / item</option>
+                    <option value="slice">slice</option>
+                    <option value="handful">handful</option>
+                    <option value="scoop">scoop</option>
+                    <option value="packet">packet</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div id="food-preview" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-bottom:10px"></div>
+              <button class="btn btn-accent btn-full" id="log-food-btn" onclick="logFood()" disabled>Log food</button>
+            </div>
+
+            <!-- CUSTOM FOOD ENTRY -->
+            <div class="card">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+                <div class="section-label" style="margin:0">Can't find it? Add custom food</div>
+                <button class="btn btn-ghost btn-sm" onclick="toggleCustomForm()" id="custom-form-toggle" style="font-size:11px;padding:4px 10px">+ Expand</button>
+              </div>
+              <div id="custom-food-form" style="display:none;margin-top:12px">
+                <div class="form-group">
+                  <label class="form-label">Food name</label>
+                  <input type="text" id="cf-name" placeholder="e.g. Hello Panda Chocolate, Protein Bar" oninput="updateCustomPreview()">
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Package / serving size</label>
+                    <input type="text" id="cf-size" placeholder="e.g. 1 bag (45g), 3 cookies, 1 cup" oninput="updateCustomPreview()">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" id="cf-qty" value="1" min="0.25" step="0.25" oninput="updateCustomPreview()">
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+                  <div class="form-group" style="margin:0">
+                    <label class="form-label">Calories</label>
+                    <input type="number" id="cf-cal" placeholder="kcal" min="0" oninput="updateCustomPreview()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" id="cf-protein" placeholder="g" min="0" step="0.1" oninput="updateCustomPreview()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" id="cf-carbs" placeholder="g" min="0" step="0.1" oninput="updateCustomPreview()">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" id="cf-fat" placeholder="g" min="0" step="0.1" oninput="updateCustomPreview()">
+                  </div>
+                </div>
+                <div id="cf-preview" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;margin-bottom:10px"></div>
+                <button class="btn btn-accent btn-full" onclick="logCustomFood()">Log custom food</button>
+                <p style="font-size:10px;color:var(--text3);margin-top:8px;text-align:center">Tip: check the nutrition label on the package for exact values</p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="section-label">Today's food log</div>
+              <div id="food-log-list"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div class="page" id="page-leaderboard">
+        <div class="page-title">Leaderboard</div>
+        <div class="page-sub"><span class="live-dot"></span>Live · updates in real time for everyone</div>
+        <div class="card"><div id="lb-list"></div></div>
+        <div class="card">
+          <div class="section-label">Habit completion today</div>
+          <div id="habit-grid" style="overflow-x:auto"></div>
+        </div>
+      </div>
+
+      <!-- CHALLENGES -->
+      <div class="page" id="page-challenges">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+          <div class="page-title">Challenges</div>
+          <button class="btn btn-accent btn-sm" onclick="showPage('build')">+ New challenge</button>
+        </div>
+        <div style="display:flex;gap:3px;border-bottom:1px solid var(--border);margin-bottom:18px">
+          <button class="ch-tab active" id="tab-active" onclick="switchChTab('active')">Active</button>
+          <button class="ch-tab" id="tab-history" onclick="switchChTab('history')">History</button>
+          <button class="ch-tab" id="tab-rankings" onclick="switchChTab('rankings')">Rankings</button>
+        </div>
+        <div id="ch-active-panel"><div id="ch-list"></div></div>
+        <div id="ch-history-panel" style="display:none"><div id="ch-history-list"></div></div>
+        <div id="ch-rankings-panel" style="display:none">
+          <div style="margin-bottom:14px">
+            <label class="form-label">Select challenge</label>
+            <select id="rankings-ch-select" onchange="renderRankings()" style="font-size:13px;padding:8px 10px"></select>
+          </div>
+          <div id="rankings-content"></div>
+        </div>
+      </div>
+
+      <!-- BUILD -->
+      <div class="page" id="page-build">
+        <div class="page-title">Build a Challenge</div>
+        <div class="page-sub">Mix habits and activate for the squad</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start" class="two-col">
+          <div>
+            <div class="card">
+              <div class="section-label">Details</div>
+              <div class="form-group"><label class="form-label">Name</label><input type="text" id="b-name" placeholder="e.g. Hard 75, Squad November"></div>
+              <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Duration (days)</label><input type="number" id="b-days" value="75" min="1" max="365"></div>
+                <div class="form-group"><label class="form-label">Start date</label><input type="text" id="b-start" placeholder="e.g. March 22"></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-label">Quick presets</div>
+              <div class="preset-grid" id="preset-grid"></div>
+              <div class="divider"></div>
+              <div class="section-label">Custom habit</div>
+              <div class="form-group"><label class="form-label">Name</label><input type="text" id="h-name" placeholder="e.g. Take supplements, Cold shower"></div>
+              <div class="form-group"><label class="form-label">Category</label><div class="cat-tags" id="cat-tags"></div></div>
+              <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Frequency</label>
+                  <select id="h-freq" onchange="freqChange()">
+                    <option value="daily">Every day</option>
+                    <option value="weekly_x" selected>X days / week</option>
+                    <option value="weekly_1">Once a week</option>
+                    <option value="weekly_2">Twice a week</option>
+                  </select>
+                </div>
+                <div class="form-group" id="freq-days-wrap">
+                  <label class="form-label">Days / week</label>
+                  <input type="number" id="h-dpw" value="5" min="1" max="7">
+                </div>
+              </div>
+              <div class="form-grid-2">
+                <div class="form-group"><label class="form-label">Target</label><input type="text" id="h-target" placeholder="e.g. 45 mins"></div>
+                <div class="form-group"><label class="form-label">Strict?</label><select id="h-strict"><option value="1">Yes</option><option value="0">No</option></select></div>
+              </div>
+              <button class="btn btn-accent btn-full" onclick="addCustomHabit()">Add habit</button>
+            </div>
+            <div class="card" style="background:var(--accent-dim2);border-color:rgba(200,241,53,.12)">
+              <div class="section-label" style="color:var(--accent2)">Templates</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <button class="btn btn-ghost btn-full" style="justify-content:flex-start;border-color:var(--border2)" onclick="loadTmpl('hard75')">⚡ Hard 75</button>
+                <button class="btn btn-ghost btn-full" style="justify-content:flex-start;border-color:var(--border2)" onclick="loadTmpl('mod75')">🛡 Modified 75</button>
+                <button class="btn btn-ghost btn-full" style="justify-content:flex-start;border-color:var(--border2)" onclick="loadTmpl('squad75')">👊 Your Squad 75</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="section-label">Habits in this challenge</div>
+              <div id="habits-preview"></div>
+              <div id="save-ch-wrap" style="display:none;margin-top:12px">
+                <button class="btn btn-accent btn-full" onclick="saveChallenge()">Activate for squad</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="page" id="page-progress">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+          <div>
+            <div class="page-title" id="progress-title">My Progress</div>
+            <div class="page-sub" id="progress-sub" style="margin-bottom:0">Personal stats</div>
+          </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="card" style="padding:14px 16px;margin-bottom:16px">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+            <div style="flex:1;min-width:140px">
+              <div class="form-label" style="margin-bottom:5px">Time range</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap">
+                <button class="prog-range-btn active" onclick="setProgRange(7,this)">7d</button>
+                <button class="prog-range-btn" onclick="setProgRange(30,this)">30d</button>
+                <button class="prog-range-btn" onclick="setProgRange(90,this)">90d</button>
+                <button class="prog-range-btn" onclick="setProgRange(0,this)">All time</button>
+              </div>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div class="form-label" style="margin-bottom:5px">Custom date range</div>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <input type="date" id="prog-date-from" onchange="applyCustomRange()" style="flex:1;min-width:110px;font-size:12px;padding:6px 8px">
+                <span style="font-size:11px;color:var(--text3)">to</span>
+                <input type="date" id="prog-date-to" onchange="applyCustomRange()" style="flex:1;min-width:110px;font-size:12px;padding:6px 8px">
+              </div>
+            </div>
+            <div style="flex:1;min-width:160px">
+              <div class="form-label" style="margin-bottom:5px">Filter by habit</div>
+              <select id="prog-habit-filter" onchange="renderProgress()" style="font-size:12px;padding:6px 8px">
+                <option value="all">All habits</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <div class="form-label" style="margin-bottom:5px">Report view</div>
+              <select id="prog-view-filter" onchange="renderProgress()" style="font-size:12px;padding:6px 8px">
+                <option value="all">All reports</option>
+                <option value="habits">Habits only</option>
+                <option value="calories">Calories only</option>
+                <option value="points">Points only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAT STRIP -->
+        <div class="metric-grid" id="progress-metrics" style="margin-top:0;margin-bottom:16px"></div>
+
+        <!-- SECTIONS — shown/hidden based on view filter -->
+        <div id="prog-section-habits">
+          <!-- HABIT HEATMAP -->
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+              <div class="section-label" style="margin:0">Activity heatmap</div>
+              <div style="font-size:11px;color:var(--text3)" id="heatmap-label"></div>
+            </div>
+            <div id="heatmap-wrap" style="overflow-x:auto;padding-bottom:4px"></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:10px;color:var(--text3)">
+              <span>Less</span>
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--bg4)"></div>
+              <div style="width:10px;height:10px;border-radius:2px;background:#1a3a0a"></div>
+              <div style="width:10px;height:10px;border-radius:2px;background:#2d6614"></div>
+              <div style="width:10px;height:10px;border-radius:2px;background:#4a9e1f"></div>
+              <div style="width:10px;height:10px;border-radius:2px;background:#c8f135"></div>
+              <span>More</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px" class="two-col">
+            <div class="card">
+              <div class="section-label">Daily completion %</div>
+              <div style="position:relative;height:200px"><canvas id="chart-habit-bar"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="section-label">Completion by habit</div>
+              <div style="position:relative;height:200px"><canvas id="chart-habit-pie"></canvas></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <div class="section-label" style="margin:0">Habit streaks & totals</div>
+              <select id="habit-sort" onchange="renderHabitTable()" style="font-size:11px;padding:4px 7px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:6px">
+                <option value="streak">Sort: streak</option>
+                <option value="best">Sort: best ever</option>
+                <option value="total">Sort: total done</option>
+                <option value="name">Sort: name</option>
+              </select>
+            </div>
+            <div id="progress-habit-table"></div>
+          </div>
+        </div>
+
+        <div id="prog-section-calories">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px" class="two-col">
+            <div class="card">
+              <div class="section-label">Calories vs goal</div>
+              <div style="position:relative;height:200px"><canvas id="chart-cal-bar"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="section-label">Macro breakdown</div>
+              <div style="position:relative;height:200px"><canvas id="chart-macro-pie"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="section-label">Macro trend over time</div>
+            <div style="position:relative;height:200px"><canvas id="chart-macro-bar"></canvas></div>
+          </div>
+        </div>
+
+        <div id="prog-section-points">
+          <div class="card">
+            <div class="section-label">Cumulative points over time</div>
+            <div style="position:relative;height:220px"><canvas id="chart-points-line"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="section-label">Daily points earned</div>
+            <div style="position:relative;height:200px"><canvas id="chart-points-daily"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SQUAD -->
+      <div class="page" id="page-squad">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+          <div><div class="page-title">Squad</div><div class="page-sub" id="squad-sub" style="margin-bottom:0"></div></div>
+          <button class="btn btn-accent btn-sm" onclick="openAddMember()">+ Add member</button>
+        </div>
+        <div id="squad-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MOBILE NAV -->
+  <nav class="mobile-nav">
+    <div class="mnav-item active" onclick="showPage('today');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Today
+    </div>
+    <div class="mnav-item" onclick="showPage('calories');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/></svg>
+      Cals
+    </div>
+    <div class="mnav-item" onclick="showPage('leaderboard');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Ranks
+    </div>
+    <div class="mnav-item" onclick="showPage('challenges');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Goals
+    </div>
+    <div class="mnav-item" onclick="showPage('squad');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Squad
+    </div>
+    <div class="mnav-item" onclick="showPage('progress');mnavActive(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </div>
+  </nav>
+</div>
+
+<!-- PIN MODAL -->
+<div class="modal-bg" id="pin-modal">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div id="pin-av" class="av" style="width:56px;height:56px;font-size:22px;margin:0 auto 10px"></div>
+    <div class="modal-title" id="pin-modal-title" style="text-align:center;margin-bottom:4px">Enter your PIN</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px" id="pin-modal-sub">Enter your 4-digit PIN to continue</div>
+
+    <!-- PIN DOTS -->
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px" id="pin-dots">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+
+    <!-- NUMPAD -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto 16px">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key pin-key-ghost" onclick="pinClear()">C</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key pin-key-ghost" onclick="pinBack()">⌫</button>
+    </div>
+
+    <p id="pin-error" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;min-height:18px"></p>
+    <button class="btn btn-ghost btn-full btn-sm" onclick="closeModal('pin-modal')">Cancel</button>
+  </div>
+</div>
+
+<!-- MEMBER MODAL -->
+<div class="modal-bg" id="member-modal" onclick="closeModalOutside(event,'member-modal')">
+  <div class="modal">
+    <div class="modal-title" id="member-modal-title">Add member</div>
+    <div class="form-group"><label class="form-label">Name</label><input type="text" id="m-name" placeholder="Enter name" maxlength="20" oninput="updateMPreview()"></div>
+    <div class="form-group"><label class="form-label">Avatar color</label><div class="color-row" id="color-picker"></div></div>
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px">
+      <div id="m-preview-av" class="av" style="width:42px;height:42px;font-size:17px;flex-shrink:0"></div>
+      <div><div id="m-preview-name" style="font-size:14px;font-weight:500;color:var(--text)">Preview</div><div style="font-size:11px;color:var(--text3)">How you'll appear</div></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" style="flex:1" onclick="saveMember()">Save</button>
+      <button class="btn" onclick="closeModal('member-modal')">Cancel</button>
+    </div>
+    <p id="member-modal-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none"></p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONSTANTS
+══════════════════════════════════════════════ */
+// Always use LOCAL date, never UTC — fixes "tomorrow's date" bug for US timezones
+function localDateStr(date) {
+  const d = date || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function localDateOffset(daysAgo) {
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  return localDateStr(d);
+}
+const TODAY = localDateStr();
+const COLORS = ['#4fc3f7','#c8f135','#f06292','#ce93d8','#ff8c42','#4db6ac','#ef5350','#ffd54f','#81c784','#90a4ae','#f48fb1','#80cbc4'];
+const CATS = ['fitness','nutrition','hydration','mental','sleep','habits'];
+const PRESETS = [
+  {name:'Outdoor workout',cat:'fitness',freq:'weekly_x',dpw:5,target:'45 mins',strict:1},
+  {name:'Indoor workout',cat:'fitness',freq:'weekly_x',dpw:5,target:'45 mins',strict:1},
+  {name:'Eat healthy',cat:'nutrition',freq:'daily',dpw:7,target:'No junk food',strict:1},
+  {name:'No sugary drinks',cat:'nutrition',freq:'daily',dpw:7,target:'Zero-cal only',strict:1},
+  {name:'1 gallon of water',cat:'hydration',freq:'daily',dpw:7,target:'128 oz',strict:1},
+  {name:'Reading',cat:'mental',freq:'weekly_x',dpw:2,target:'2 hrs/week',strict:0},
+  {name:'No alcohol',cat:'habits',freq:'weekly_x',dpw:6,target:'Max 1 day off',strict:0},
+  {name:'Cold shower',cat:'fitness',freq:'daily',dpw:7,target:'',strict:0},
+  {name:'Sleep 8 hours',cat:'sleep',freq:'daily',dpw:7,target:'8+ hrs',strict:0},
+  {name:'Take supplements',cat:'nutrition',freq:'daily',dpw:7,target:'',strict:0},
+  {name:'Progress photo',cat:'habits',freq:'weekly_x',dpw:1,target:'Once/week',strict:1},
+  {name:'Meditation',cat:'mental',freq:'daily',dpw:7,target:'10 mins',strict:0},
+  {name:'10,000 steps',cat:'fitness',freq:'daily',dpw:7,target:'10k steps',strict:0}
+];
+const TEMPLATES = {
+  hard75:  {name:'Hard 75',  days:75, pi:[0,1,8,3,4,6,10]},
+  mod75:   {name:'Modified 75', days:75, pi:[0,2,3,4,5,8,11]},
+  squad75: {name:'Squad 75', days:75, pi:[0,1,2,3,4,5,6]}
+};
+
+/* ══════════════════════════════════════════════
+   SUPABASE STATE
+══════════════════════════════════════════════ */
+let sb = null; // supabase client
+let currentMember = null;
+let allMembers = [];
+let allChallenges = [];
+let allEnrollments = []; // [{member_name, challenge_id}]
+let habitLogs = []; // today's logs for all members
+let myFoodLog = [];
+let myCalGoal = 2000;
+let activeChallengeOverride = null;
+let selectedColor = COLORS[0];
+let mModalMode = 'add';
+let editingMemberName = null;
+let selectedCat = 'fitness';
+let newHabits = [];
+let selectedPresets = new Set();
+let foodTimer = null;
+let selectedFood = null;
+let chTab = 'active';
+let realtimeSub = null;
+
+/* ══════════════════════════════════════════════
+   SETUP / CONNECT
+══════════════════════════════════════════════ */
+async function connectSupabase() {
+  const url = document.getElementById('sb-url').value.trim();
+  const key = document.getElementById('sb-key').value.trim();
+  const err = document.getElementById('setup-error');
+  err.style.display = 'none';
+
+  if (!url || !key) { showSetupError('Please enter both URL and anon key'); return; }
+  if (!url.includes('supabase.co')) { showSetupError('That doesn\'t look like a Supabase URL'); return; }
+
+  try {
+    sb = supabase.createClient(url, key);
+    // test connection
+    const { error } = await sb.from('members').select('name').limit(1);
+    if (error) { showSetupError('Connection failed: ' + error.message + '\n\nMake sure you ran the SQL setup script.'); return; }
+    // save creds
+    localStorage.setItem('sf_url', url);
+    localStorage.setItem('sf_key', key);
+    await launchApp();
+  } catch(e) {
+    showSetupError('Could not connect: ' + e.message);
+  }
+}
+
+function showSetupError(msg) {
+  const el = document.getElementById('setup-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function launchApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  await loadAllData();
+  setupRealtime();
+  showMemberSelect();
+}
+
+/* ══════════════════════════════════════════════
+   DATA LOADING
+══════════════════════════════════════════════ */
+async function loadAllData() {
+  const [mRes, chRes, enRes, hlRes] = await Promise.all([
+    sb.from('members').select('*').order('created_at'),
+    sb.from('challenges').select('*').eq('status','active').order('created_at'),
+    sb.from('enrollments').select('*'),
+    sb.from('habit_logs').select('*').eq('log_date', TODAY)
+  ]);
+  allMembers = mRes.data || [];
+  allChallenges = (chRes.data || []).map(ch => ({...ch, habits: ch.habits || []}));
+  allEnrollments = enRes.data || [];
+  habitLogs = hlRes.data || [];
+}
+
+async function loadMyData() {
+  if (!currentMember) return;
+  const [flRes, cgRes] = await Promise.all([
+    sb.from('food_logs').select('*').eq('member_name', currentMember).eq('log_date', TODAY).order('created_at'),
+    sb.from('calorie_goals').select('*').eq('member_name', currentMember).single()
+  ]);
+  myFoodLog = flRes.data || [];
+  myCalGoal = cgRes.data ? cgRes.data.goal : 2000;
+}
+
+/* ══════════════════════════════════════════════
+   REALTIME
+══════════════════════════════════════════════ */
+function setupRealtime() {
+  if (realtimeSub) sb.removeChannel(realtimeSub);
+  realtimeSub = sb.channel('squad-fit-live')
+    .on('postgres_changes', {event:'*', schema:'public', table:'habit_logs'}, async (payload) => {
+      const {data} = await sb.from('habit_logs').select('*').eq('log_date', TODAY);
+      habitLogs = data || [];
+      if (document.getElementById('page-leaderboard').classList.contains('active')) renderLeaderboard();
+      if (document.getElementById('page-today').classList.contains('active')) renderToday();
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'members'}, async () => {
+      const {data} = await sb.from('members').select('*').order('created_at');
+      allMembers = data || [];
+      if (document.getElementById('page-squad').classList.contains('active')) renderSquad();
+      if (document.getElementById('page-leaderboard').classList.contains('active')) renderLeaderboard();
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'enrollments'}, async () => {
+      const {data} = await sb.from('enrollments').select('*');
+      allEnrollments = data || [];
+      if (document.getElementById('page-challenges').classList.contains('active')) renderActiveChallenges();
+    })
+    .subscribe((status) => {
+      const badge = document.getElementById('live-badge');
+      if (badge) badge.style.display = status === 'SUBSCRIBED' ? 'inline' : 'none';
+    });
+}
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function freqLabel(h) {
+  if (h.freq==='daily') return 'Daily';
+  if (h.freq==='weekly_1') return '1× / week';
+  if (h.freq==='weekly_2') return '2× / week';
+  if (h.freq==='weekly_x') return `${h.dpw}× / week`;
+  return '';
+}
+function badge(cat) { return `<span class="badge b-${cat}">${cat}</span>`; }
+function avEl(m, size=36) {
+  const fs = Math.round(size*.38);
+  return `<div class="av" style="width:${size}px;height:${size}px;background:${m.av}22;color:${m.av};border:1.5px solid ${m.av}44;font-size:${fs}px">${(m.name||'?')[0].toUpperCase()}</div>`;
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function getMemberEnrollments(mName) {
+  return allEnrollments.filter(e => e.member_name === mName).map(e => e.challenge_id);
+}
+function isEnrolled(mName, chId) { return getMemberEnrollments(mName).includes(chId); }
+
+function getMyActiveChallenges(mName) {
+  const enrolled = getMemberEnrollments(mName);
+  if (!enrolled.length) return []; // must explicitly join
+  return allChallenges.filter(ch => enrolled.includes(ch.id));
+}
+function getMyPrimaryChallenge(mName) {
+  const all = getMyActiveChallenges(mName);
+  if (!all.length) return null;
+  if (activeChallengeOverride) {
+    const f = all.find(c => c.id === activeChallengeOverride);
+    if (f) return f;
+  }
+  return all[0];
+}
+
+// All habit IDs with same name across member's enrolled challenges
+function getSiblingHabitIds(mName, habitId) {
+  let targetName = '';
+  for (const ch of allChallenges) {
+    const h = ch.habits.find(h => h.id === habitId);
+    if (h) { targetName = h.name.trim().toLowerCase(); break; }
+  }
+  if (!targetName) return [habitId];
+  const myChs = getMyActiveChallenges(mName);
+  const ids = new Set([habitId]);
+  for (const ch of myChs) {
+    for (const h of ch.habits) {
+      if (h.name.trim().toLowerCase() === targetName) ids.add(h.id);
+    }
+  }
+  return [...ids];
+}
+
+function isHabitDoneToday(mName, habitId) {
+  return habitLogs.some(l => l.member_name === mName && l.habit_id === habitId && l.log_date === TODAY);
+}
+
+/* ══════════════════════════════════════════════
+   MEMBER SELECT
+══════════════════════════════════════════════ */
+function showMemberSelect() {
+  document.getElementById('member-select-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  currentMember = null;
+  renderMemberGrid();
+}
+
+function renderMemberGrid() {
+  document.getElementById('member-grid').innerHTML =
+    allMembers.map(m => {
+      const myCh = getMyActiveChallenges(m.name)[0];
+      const done = myCh ? myCh.habits.filter(h => isHabitDoneToday(m.name, h.id)).length : 0;
+      const total = myCh ? myCh.habits.length : 0;
+      const sub = total ? `${done}/${total} today` : 'Tap to enter';
+      const hasPin = !!m.pin_hash;
+      const isAdmin = !!m.is_admin;
+      return `<div class="member-tile" onclick="selectMember('${m.name}')">
+        <div style="position:relative;display:inline-block">
+          <div class="tile-av" style="background:${m.av}22;color:${m.av};border:2px solid ${m.av}44">${m.name[0].toUpperCase()}</div>
+          ${hasPin ? `<div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:var(--bg2);border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:9px">🔒</div>` : ''}
+        </div>
+        <div class="tile-name">${m.name}${isAdmin ? ' <span class="admin-badge">Admin</span>' : ''}</div>
+        <div class="tile-sub">${sub}</div>
+      </div>`;
+    }).join('');
+}
+
+/* ══ SELF REGISTRATION ══ */
+let selfRegColor = COLORS[0];
+
+function openSelfReg() {
+  selfRegColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+  document.getElementById('self-reg-collapsed').style.display = 'none';
+  document.getElementById('self-reg-form').style.display = 'block';
+  document.getElementById('self-reg-name').value = '';
+  document.getElementById('self-reg-error').style.display = 'none';
+  buildSelfRegColors();
+  updateSelfRegPreview();
+  setTimeout(() => document.getElementById('self-reg-name').focus(), 80);
+}
+
+function closeSelfReg() {
+  document.getElementById('self-reg-collapsed').style.display = 'block';
+  document.getElementById('self-reg-form').style.display = 'none';
+}
+
+function buildSelfRegColors() {
+  document.getElementById('self-reg-colors').innerHTML = COLORS.map(c =>
+    `<div onclick="pickSelfRegColor('${c}')"
+      style="width:28px;height:28px;border-radius:50%;background:${c};cursor:pointer;border:${c===selfRegColor?'3px solid #f0f0f0':'2px solid transparent'};transition:all .15s;transform:${c===selfRegColor?'scale(1.15)':'scale(1)'}"></div>`
+  ).join('');
+}
+
+function pickSelfRegColor(c) {
+  selfRegColor = c;
+  buildSelfRegColors();
+  updateSelfRegPreview();
+}
+
+function updateSelfRegPreview() {
+  const name = document.getElementById('self-reg-name').value.trim() || '?';
+  const av = document.getElementById('self-reg-preview-av');
+  av.style.background = selfRegColor + '22';
+  av.style.color = selfRegColor;
+  av.style.border = `2px solid ${selfRegColor}44`;
+  av.textContent = name[0].toUpperCase();
+  document.getElementById('self-reg-preview-name').textContent = name === '?' ? 'Your name here' : name;
+}
+
+async function submitSelfReg() {
+  const name = document.getElementById('self-reg-name').value.trim();
+  const errEl = document.getElementById('self-reg-error');
+  errEl.style.display = 'none';
+  if (!name) { errEl.textContent = 'Please enter your name'; errEl.style.display = 'block'; return; }
+  if (allMembers.find(m => m.name.toLowerCase() === name.toLowerCase())) {
+    errEl.textContent = 'That name is already taken — is that you? Tap your tile above!';
+    errEl.style.display = 'block'; return;
+  }
+  const btn = event.target;
+  btn.textContent = 'Joining...'; btn.disabled = true;
+  const { data, error } = await sb.from('members').insert({ name, av: selfRegColor }).select().single();
+  btn.textContent = 'Join squad'; btn.disabled = false;
+  if (error) { errEl.textContent = 'Error: ' + error.message; errEl.style.display = 'block'; return; }
+  allMembers.push(data);
+  closeSelfReg();
+  renderMemberGrid();
+  toast('Welcome to the squad, ' + name + '! 🎉');
+  // Prompt to create PIN
+  setTimeout(() => openPinModal(name, 'create'), 400);
+}
+
+async function selectMember(name) {
+  const m = allMembers.find(x => x.name === name);
+  if (!m) return;
+
+  // Check if session is already active for this member on this device
+  const sessionKey = 'sf_session_' + name;
+  const session = localStorage.getItem(sessionKey);
+  if (session === 'authenticated') {
+    await enterApp(name); return;
+  }
+
+  // If no PIN set yet — first time login, prompt to create one
+  if (!m.pin_hash) {
+    openPinModal(name, 'create'); return;
+  }
+
+  // Has PIN — prompt to enter it
+  openPinModal(name, 'enter');
+}
+
+async function enterApp(name) {
+  currentMember = name;
+  const m = allMembers.find(x => x.name === name);
+  if (!m) return;
+  activeChallengeOverride = null;
+  cachedHabitLogs = []; cachedFoodLogs = [];
+  document.getElementById('member-select-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'block';
+  const av = document.getElementById('sb-av');
+  Object.assign(av.style, {background:m.av+'22',color:m.av,border:`1.5px solid ${m.av}44`,width:'30px',height:'30px',fontSize:'12px'});
+  av.textContent = m.name[0].toUpperCase();
+  document.getElementById('sb-name').textContent = m.name + (m.is_admin ? ' ★' : '');
+  await loadMyData();
+  showPage('today');
+}
+
+function goHome() {
+  // Clear session so PIN is required next time (optional — comment out to stay logged in)
+  // localStorage.removeItem('sf_session_' + currentMember);
+  document.getElementById('member-select-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+  currentMember = null;
+  renderMemberGrid();
+}
+
+/* ══════════════════════════════════════════════
+   PIN SYSTEM
+══════════════════════════════════════════════ */
+let pinMode = 'enter'; // 'enter' | 'create' | 'confirm'
+let pinMemberName = '';
+let pinBuffer = '';
+let pinFirstEntry = '';
+
+// Simple hash (not cryptographic but fine for a squad app PIN)
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin + 'squadfit_salt_2025');
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function openPinModal(name, mode) {
+  const m = allMembers.find(x => x.name === name);
+  if (!m) return;
+  pinMode = mode;
+  pinMemberName = name;
+  pinBuffer = '';
+  pinFirstEntry = '';
+
+  const av = document.getElementById('pin-av');
+  Object.assign(av.style, {background:m.av+'22',color:m.av,border:`2px solid ${m.av}44`,width:'56px',height:'56px',fontSize:'22px'});
+  av.textContent = m.name[0].toUpperCase();
+
+  const titles = {
+    enter:   `Welcome back, ${name}!`,
+    create:  `Set your PIN, ${name}`,
+    confirm: `Confirm your PIN`
+  };
+  const subs = {
+    enter:   'Enter your 4-digit PIN',
+    create:  'Choose a 4-digit PIN to secure your account',
+    confirm: 'Enter the same PIN again to confirm'
+  };
+  document.getElementById('pin-modal-title').textContent = titles[mode];
+  document.getElementById('pin-modal-sub').textContent = subs[mode];
+  document.getElementById('pin-error').style.display = 'none';
+  updatePinDots();
+  document.getElementById('pin-modal').classList.add('open');
+}
+
+function updatePinDots() {
+  document.querySelectorAll('.pin-dot').forEach((dot, i) => {
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('error');
+  });
+}
+
+function pinDotError() {
+  document.querySelectorAll('.pin-dot').forEach(d => {
+    d.classList.remove('filled');
+    d.classList.add('error');
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error'));
+  }, 600);
+}
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => handlePinComplete(), 150);
+  }
+}
+
+function pinBack() {
+  pinBuffer = pinBuffer.slice(0, -1);
+  updatePinDots();
+}
+
+function pinClear() {
+  pinBuffer = '';
+  updatePinDots();
+}
+
+async function handlePinComplete() {
+  const errEl = document.getElementById('pin-error');
+  errEl.style.display = 'none';
+
+  if (pinMode === 'enter') {
+    // Verify PIN
+    const m = allMembers.find(x => x.name === pinMemberName);
+    const hash = await hashPin(pinBuffer);
+    if (hash === m.pin_hash) {
+      // Save session so they stay logged in on this device
+      localStorage.setItem('sf_session_' + pinMemberName, 'authenticated');
+      closeModal('pin-modal');
+      await enterApp(pinMemberName);
+    } else {
+      pinDotError();
+      pinBuffer = '';
+      errEl.textContent = 'Incorrect PIN — try again';
+      errEl.style.display = 'block';
+    }
+
+  } else if (pinMode === 'create') {
+    // Save first entry, ask to confirm
+    pinFirstEntry = pinBuffer;
+    pinBuffer = '';
+    pinMode = 'confirm';
+    document.getElementById('pin-modal-title').textContent = 'Confirm your PIN';
+    document.getElementById('pin-modal-sub').textContent = 'Enter the same PIN again';
+    updatePinDots();
+
+  } else if (pinMode === 'confirm') {
+    if (pinBuffer === pinFirstEntry) {
+      // Hash and save PIN
+      const hash = await hashPin(pinBuffer);
+      await sb.from('members').update({ pin_hash: hash }).eq('name', pinMemberName);
+      const idx = allMembers.findIndex(m => m.name === pinMemberName);
+      if (idx >= 0) allMembers[idx].pin_hash = hash;
+      localStorage.setItem('sf_session_' + pinMemberName, 'authenticated');
+      closeModal('pin-modal');
+      toast('PIN set! You\'re all secured 🔒');
+      await enterApp(pinMemberName);
+    } else {
+      pinDotError();
+      pinBuffer = '';
+      pinFirstEntry = '';
+      pinMode = 'create';
+      document.getElementById('pin-modal-title').textContent = 'PINs didn\'t match — try again';
+      document.getElementById('pin-modal-sub').textContent = 'Choose a new 4-digit PIN';
+      updatePinDots();
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   TODAY
+══════════════════════════════════════════════ */
+function renderToday() {
+  if (!currentMember) return;
+  const ch = getMyPrimaryChallenge(currentMember);
+  document.getElementById('today-title').textContent = 'Hey, ' + currentMember + '!';
+  document.getElementById('today-sub').textContent = ch
+    ? `Day ${ch.current_day} of ${ch.days} · ${ch.name}`
+    : 'No challenge joined yet';
+
+  let done=0, total=0;
+  if (ch) ch.habits.forEach(h => { total++; if (isHabitDoneToday(currentMember, h.id)) done++; });
+  const pct = total ? Math.round(done/total*100) : 0;
+  const r=28, circ=Math.round(2*Math.PI*r), off=Math.round(circ*(1-pct/100));
+  document.getElementById('prog-ring').innerHTML = `
+    <svg width="68" height="68" viewBox="0 0 68 68">
+      <circle fill="none" stroke="var(--bg4)" stroke-width="4" cx="34" cy="34" r="${r}"/>
+      <circle fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"
+        cx="34" cy="34" r="${r}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"
+        transform="rotate(-90 34 34)" style="transition:stroke-dashoffset .5s ease"/>
+      <text x="34" y="39" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="16" fill="#c8f135">${pct}%</text>
+    </svg>`;
+
+  const calTotal = myFoodLog.reduce((a,f)=>a+f.calories,0);
+  document.getElementById('today-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Done today</div><div class="metric-val c-accent">${done}/${total}</div><div class="metric-sub">habits</div></div>
+    <div class="metric"><div class="metric-label">Day</div><div class="metric-val c-blue">${ch?ch.current_day:'—'}</div><div class="metric-sub">of ${ch?ch.days:'—'}</div></div>
+    <div class="metric"><div class="metric-label">Days left</div><div class="metric-val">${ch?ch.days-ch.current_day:0}</div><div class="metric-sub">to go</div></div>
+    <div class="metric"><div class="metric-label">Calories</div><div class="metric-val c-orange">${calTotal}</div><div class="metric-sub">of ${myCalGoal}</div></div>`;
+
+  if (!ch) {
+    document.getElementById('habit-checklist').innerHTML = `<div class="empty"><div class="empty-title">No challenge joined</div><div class="empty-sub" style="margin-bottom:12px">Join one to start tracking</div><button class="btn btn-accent btn-sm" onclick="showPage('challenges')">Browse challenges</button></div>`;
+    document.getElementById('streak-display').innerHTML = '';
+    document.getElementById('ch-progress-card').innerHTML = '';
+    return;
+  }
+
+  const myChs = getMyActiveChallenges(currentMember);
+  const switcher = myChs.length > 1
+    ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">${myChs.map(c=>`<button class="preset-chip${c.id===ch.id?' selected':''}" onclick="activeChallengeOverride='${c.id}';renderToday()" style="font-size:11px;padding:3px 9px">${c.name}</button>`).join('')}</div>`
+    : '';
+
+  document.getElementById('habit-checklist').innerHTML = switcher + ch.habits.map(h => {
+    const isDone = isHabitDoneToday(currentMember, h.id);
+    const siblings = getSiblingHabitIds(currentMember, h.id);
+    const crossBadge = siblings.length > 1
+      ? `<span class="cross-badge">✓ ${siblings.length} challenges</span>` : '';
+    return `<div class="habit-row">
+      <button class="check-btn${isDone?' done':''}" onclick="toggleHabit('${h.id}','${h.name.replace(/'/g,"\\'")}',this)">
+        <svg viewBox="0 0 13 13" fill="none"><path d="M2 6.5l3.5 3.5 5.5-6" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="habit-text">
+        <div class="habit-name${isDone?' struck':''}">${h.name}${h.target?` <span style="font-weight:400;color:var(--text3)">· ${h.target}</span>`:''}${crossBadge}</div>
+        <div class="habit-detail">${freqLabel(h)} &nbsp;${badge(h.cat)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Streaks (computed from habit_logs in DB)
+  document.getElementById('streak-display').innerHTML = ch.habits.map(h => {
+    const myLogs = habitLogs.filter(l => l.member_name === currentMember && l.habit_id === h.id);
+    const week = [];
+    for (let i=4;i>=0;i--) {
+      week.push(myLogs.some(l => l.log_date === localDateOffset(i)) ? 1 : 0);
+    }
+    const dots = week.map((v,i)=>`<div class="dot ${i===4?'dot-today':v?'dot-on':'dot-off'}"></div>`).join('');
+    // streak count = consecutive days ending today
+    let streak=0; let sOff=0;
+    while(true){const k=localDateOffset(sOff);if(!habitLogs.some(l=>l.member_name===currentMember&&l.habit_id===h.id&&l.log_date===k))break;streak++;sOff++;}
+    return `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div style="flex:1;font-size:12px;color:var(--text);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${h.name}</div>
+      <div class="dots">${dots}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent);min-width:28px;text-align:right">${streak}d</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('ch-progress-card').innerHTML = `
+    <div class="section-label">Challenge progress</div>
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px">
+      <div class="pbar"><div class="pfill" style="width:${Math.round(ch.current_day/ch.days*100)}%;background:var(--accent)"></div></div>
+      <span style="font-size:11px;color:var(--text2)">${Math.round(ch.current_day/ch.days*100)}%</span>
+    </div>
+    <div style="font-size:11px;color:var(--text3)">${ch.name} · Day ${ch.current_day} of ${ch.days}</div>`;
+}
+
+async function toggleHabit(hid, hname, btn) {
+  const isDone = isHabitDoneToday(currentMember, hid);
+  const siblings = getSiblingHabitIds(currentMember, hid);
+
+  if (isDone) {
+    // Remove all sibling logs
+    await sb.from('habit_logs').delete()
+      .eq('member_name', currentMember)
+      .eq('log_date', TODAY)
+      .in('habit_id', siblings);
+    habitLogs = habitLogs.filter(l => !(l.member_name===currentMember && siblings.includes(l.habit_id) && l.log_date===TODAY));
+  } else {
+    // Insert all sibling logs (upsert so no dupes)
+    const rows = siblings.map(sid => {
+      const ch2 = allChallenges.find(c => c.habits.some(h=>h.id===sid));
+      const h2 = ch2 && ch2.habits.find(h=>h.id===sid);
+      return {member_name:currentMember, habit_id:sid, habit_name:h2?h2.name:hname, log_date:TODAY};
+    });
+    const {data} = await sb.from('habit_logs').upsert(rows, {onConflict:'member_name,habit_id,log_date'}).select();
+    if (data) habitLogs = [...habitLogs.filter(l=>!(l.member_name===currentMember&&siblings.includes(l.habit_id)&&l.log_date===TODAY)), ...data];
+    if (siblings.length > 1) toast(`"${hname}" counted in ${siblings.length} challenges!`);
+  }
+  renderToday();
+}
+
+/* ══════════════════════════════════════════════
+   CALORIES
+══════════════════════════════════════════════ */
+function renderCalories() {
+  if (!currentMember) return;
+  document.getElementById('cal-sub').textContent = `${currentMember}'s nutrition · ${TODAY}`;
+  document.getElementById('cal-goal-input').value = myCalGoal;
+
+  const total = myFoodLog.reduce((a,f)=>a+f.calories,0);
+  const totalP = myFoodLog.reduce((a,f)=>a+(f.protein||0),0);
+  const totalC = myFoodLog.reduce((a,f)=>a+(f.carbs||0),0);
+  const totalF = myFoodLog.reduce((a,f)=>a+(f.fat||0),0);
+  const pct = Math.min(100,Math.round(total/myCalGoal*100));
+  const color = pct>100?'#ef5350':pct>80?'#ff8c42':'#c8f135';
+  const r=38,circ=Math.round(2*Math.PI*r),off=Math.round(circ*(1-pct/100));
+
+  document.getElementById('cal-ring').innerHTML = `
+    <svg width="96" height="96" viewBox="0 0 96 96">
+      <circle fill="none" stroke="var(--bg4)" stroke-width="6" cx="48" cy="48" r="${r}"/>
+      <circle fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"
+        cx="48" cy="48" r="${r}" stroke-dasharray="${circ}" stroke-dashoffset="${off}"
+        transform="rotate(-90 48 48)" style="transition:all .5s ease"/>
+      <text x="48" y="44" text-anchor="middle" font-family="Bebas Neue,sans-serif" font-size="18" fill="${color}">${total}</text>
+      <text x="48" y="57" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="var(--text3)">of ${myCalGoal}</text>
+    </svg>`;
+
+  document.getElementById('cal-summary').innerHTML = `
+    <div class="cal-stat"><div class="cal-stat-num" style="color:#ef9a9a">${Math.round(totalP)}g</div><div class="cal-stat-label">Protein</div></div>
+    <div class="cal-stat"><div class="cal-stat-num" style="color:#80cbc4">${Math.round(totalC)}g</div><div class="cal-stat-label">Carbs</div></div>
+    <div class="cal-stat"><div class="cal-stat-num" style="color:#ffcc80">${Math.round(totalF)}g</div><div class="cal-stat-label">Fat</div></div>`;
+
+  document.getElementById('food-log-list').innerHTML = myFoodLog.length
+    ? myFoodLog.map((f,i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.food_name}</div>
+          <div style="font-size:10px;color:var(--text3)">${f.qty} ${f.unit} · P:${Math.round(f.protein||0)}g C:${Math.round(f.carbs||0)}g F:${Math.round(f.fat||0)}g</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--accent)">${f.calories}</div>
+          <div style="font-size:9px;color:var(--text3)">kcal</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeFood('${f.id}')">✕</button>
+      </div>`).join('')
+    : '<div class="empty" style="padding:16px"><div class="empty-sub">No food logged yet</div></div>';
+}
+
+async function saveCalGoal() {
+  const v = parseInt(document.getElementById('cal-goal-input').value);
+  if (!v||v<100){toast('Enter a valid goal');return;}
+  myCalGoal = v;
+  await sb.from('calorie_goals').upsert({member_name:currentMember,goal:v},{onConflict:'member_name'});
+  toast('Goal saved!'); renderCalories(); renderToday();
+}
+
+async function removeFood(id) {
+  await sb.from('food_logs').delete().eq('id',id);
+  myFoodLog = myFoodLog.filter(f=>f.id!==id);
+  toast('Removed'); renderCalories(); renderToday();
+}
+
+function foodDebounce() { clearTimeout(foodTimer); foodTimer = setTimeout(doFoodSearch,380); }
+
+async function doFoodSearch() {
+  const q = document.getElementById('food-search').value.trim();
+  const res = document.getElementById('food-results');
+  if (q.length<2){res.classList.remove('open');return;}
+  res.innerHTML='<div style="padding:10px 12px;color:var(--text3);font-size:12px">Searching USDA...</div>';
+  res.classList.add('open');
+  try {
+    const r = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(q)}&pageSize=10&api_key=qJo3618x4s0Yb1wDQWfqUNThR71ydCWIGQkJuoXp`);
+    const d = await r.json();
+    if (!d.foods||!d.foods.length){res.innerHTML='<div style="padding:10px 12px;color:var(--text3);font-size:12px">No results</div>';return;}
+    res.innerHTML = d.foods.map(f=>{
+      const kcal=getNut(f.foodNutrients,'Energy')||getNut(f.foodNutrients,'Energy (Atwater General Factors)');
+      return `<div class="food-item" onclick='pickFood(${JSON.stringify({name:f.description,calories:Math.round(kcal||0),protein:Math.round(getNut(f.foodNutrients,"Protein")||0),carbs:Math.round(getNut(f.foodNutrients,"Carbohydrate, by difference")||0),fat:Math.round(getNut(f.foodNutrients,"Total lipid (fat)")||0)})})'>
+        <div class="food-item-name">${f.description}</div>
+        <div class="food-item-meta">${Math.round(kcal||0)} kcal / 100g${f.brandOwner?' · '+f.brandOwner:''}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { res.innerHTML='<div style="padding:10px 12px;color:var(--red);font-size:12px">Search failed</div>'; }
+}
+function getNut(nuts,name){if(!nuts)return 0;const n=nuts.find(x=>x.nutrientName===name||x.name===name);return n?n.value:0;}
+
+function pickFood(food) {
+  selectedFood = food;
+  document.getElementById('food-search').value = food.name;
+  document.getElementById('food-results').classList.remove('open');
+  updateFoodPreview();
+  document.getElementById('log-food-btn').disabled = false;
+}
+
+// Converts qty + unit to a multiplier relative to 100g (USDA base)
+function getUnitMultiplier(qty, unit) {
+  // All conversions to grams, then divide by 100 for per-100g base
+  const toGrams = {
+    '100g':    qty * 100,
+    'g':       qty * 1,
+    'oz':      qty * 28.3495,
+    'lb':      qty * 453.592,
+    'cup':     qty * 240,       // ~240ml water equiv; works for most foods
+    'half_cup':qty * 120,
+    'third_cup':qty * 80,
+    'quarter_cup': qty * 60,
+    'tbsp':    qty * 15,
+    'tsp':     qty * 5,
+    'fl_oz':   qty * 29.5735,
+    'ml':      qty * 1,
+    'liter':   qty * 1000,
+    'serving': qty * 100,       // 1 serving = ~100g as USDA default
+    'piece':   qty * 100,
+    'slice':   qty * 30,        // ~30g avg slice
+    'handful': qty * 30,        // ~30g handful
+    'scoop':   qty * 30,        // ~30g scoop
+    'packet':  qty * 10,        // ~10g packet
+  };
+  return (toGrams[unit] || qty * 100) / 100;
+}
+
+function unitLabel(unit) {
+  const labels = {
+    '100g':'100g','g':'g','oz':'oz','lb':'lb',
+    'cup':'cup','half_cup':'½ cup','third_cup':'⅓ cup','quarter_cup':'¼ cup',
+    'tbsp':'tbsp','tsp':'tsp','fl_oz':'fl oz','ml':'ml','liter':'L',
+    'serving':'serving','piece':'piece','slice':'slice','handful':'handful','scoop':'scoop','packet':'packet'
+  };
+  return labels[unit] || unit;
+}
+
+function updateFoodPreview() {
+  if (!selectedFood) return;
+  const qty = parseFloat(document.getElementById('food-qty').value) || 1;
+  const unit = document.getElementById('food-unit').value;
+  const mult = getUnitMultiplier(qty, unit);
+  const cals = Math.round(selectedFood.calories * mult);
+  const prot = Math.round(selectedFood.protein * mult * 10) / 10;
+  const carb = Math.round(selectedFood.carbs * mult * 10) / 10;
+  const fat  = Math.round(selectedFood.fat  * mult * 10) / 10;
+  const preview = document.getElementById('food-preview');
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:6px">${selectedFood.name}</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:500;margin-bottom:4px">
+      <span style="color:var(--accent)">⚡ ${cals} kcal</span>
+      <span style="color:#ef9a9a">P: ${prot}g</span>
+      <span style="color:#80cbc4">C: ${carb}g</span>
+      <span style="color:#ffcc80">F: ${fat}g</span>
+    </div>
+    <div style="font-size:10px;color:var(--text3)">For ${qty} ${unitLabel(unit)} · USDA base per 100g</div>`;
+}
+
+async function logFood() {
+  if (!selectedFood) return;
+  const qty = parseFloat(document.getElementById('food-qty').value) || 1;
+  const unit = document.getElementById('food-unit').value;
+  const mult = getUnitMultiplier(qty, unit);
+  const entry = {
+    member_name: currentMember, log_date: TODAY,
+    food_name: selectedFood.name,
+    qty, unit: unitLabel(unit),
+    calories: Math.round(selectedFood.calories * mult),
+    protein:  Math.round(selectedFood.protein  * mult * 10) / 10,
+    carbs:    Math.round(selectedFood.carbs     * mult * 10) / 10,
+    fat:      Math.round(selectedFood.fat       * mult * 10) / 10
+  };
+  const {data} = await sb.from('food_logs').insert(entry).select().single();
+  if (data) myFoodLog.push(data);
+  selectedFood = null;
+  document.getElementById('food-search').value = '';
+  document.getElementById('food-preview').style.display = 'none';
+  document.getElementById('log-food-btn').disabled = true;
+  document.getElementById('food-qty').value = '1';
+  toast(`${entry.food_name} — ${entry.calories} kcal logged`);
+  renderCalories(); renderToday();
+}
+
+/* ── CUSTOM FOOD ── */
+function toggleCustomForm() {
+  const form = document.getElementById('custom-food-form');
+  const btn = document.getElementById('custom-form-toggle');
+  const open = form.style.display === 'none';
+  form.style.display = open ? 'block' : 'none';
+  btn.textContent = open ? '− Collapse' : '+ Expand';
+}
+
+function updateCustomPreview() {
+  const name = document.getElementById('cf-name').value.trim();
+  const size = document.getElementById('cf-size').value.trim();
+  const qty  = parseFloat(document.getElementById('cf-qty').value) || 1;
+  const cal  = Math.round((parseFloat(document.getElementById('cf-cal').value) || 0) * qty);
+  const prot = Math.round((parseFloat(document.getElementById('cf-protein').value) || 0) * qty * 10) / 10;
+  const carb = Math.round((parseFloat(document.getElementById('cf-carbs').value) || 0) * qty * 10) / 10;
+  const fat  = Math.round((parseFloat(document.getElementById('cf-fat').value) || 0) * qty * 10) / 10;
+
+  const preview = document.getElementById('cf-preview');
+  if (!name && !cal) { preview.style.display = 'none'; return; }
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">
+      ${name || 'Custom food'}${size ? ` <span style="font-weight:400;color:var(--text3)">· ${qty > 1 ? qty + ' × ' : ''}${size}</span>` : ''}
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:500;margin-bottom:3px">
+      <span style="color:var(--accent)">⚡ ${cal} kcal</span>
+      <span style="color:#ef9a9a">P: ${prot}g</span>
+      <span style="color:#80cbc4">C: ${carb}g</span>
+      <span style="color:#ffcc80">F: ${fat}g</span>
+    </div>
+    ${qty > 1 ? `<div style="font-size:10px;color:var(--text3)">Values × ${qty} (per serving values × quantity)</div>` : ''}`;
+}
+
+async function logCustomFood() {
+  const name = document.getElementById('cf-name').value.trim();
+  const size = document.getElementById('cf-size').value.trim();
+  const qty  = parseFloat(document.getElementById('cf-qty').value) || 1;
+  const cal  = parseFloat(document.getElementById('cf-cal').value) || 0;
+
+  if (!name) { toast('Enter a food name'); return; }
+  if (!cal)  { toast('Enter the calories'); return; }
+
+  const prot = parseFloat(document.getElementById('cf-protein').value) || 0;
+  const carb = parseFloat(document.getElementById('cf-carbs').value)   || 0;
+  const fat  = parseFloat(document.getElementById('cf-fat').value)     || 0;
+
+  const entry = {
+    member_name: currentMember,
+    log_date: TODAY,
+    food_name: name,
+    qty,
+    unit: size || 'serving',
+    calories: Math.round(cal * qty),
+    protein:  Math.round(prot * qty * 10) / 10,
+    carbs:    Math.round(carb * qty * 10) / 10,
+    fat:      Math.round(fat  * qty * 10) / 10
+  };
+
+  const {data, error} = await sb.from('food_logs').insert(entry).select().single();
+  if (error) { toast('Error saving: ' + error.message); return; }
+  if (data) myFoodLog.push(data);
+
+  // Clear form
+  ['cf-name','cf-size','cf-cal','cf-protein','cf-carbs','cf-fat'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('cf-qty').value = '1';
+  document.getElementById('cf-preview').style.display = 'none';
+
+  toast(`${entry.food_name} — ${entry.calories} kcal logged`);
+  renderCalories(); renderToday();
+}
+
+/* ══════════════════════════════════════════════
+   LEADERBOARD
+══════════════════════════════════════════════ */
+function renderLeaderboard() {
+  const scores = allMembers.map(m => {
+    const myChs = getMyActiveChallenges(m.name);
+    const counted = new Set();
+    let pts = 0;
+    myChs.forEach(ch => {
+      ch.habits.forEach(h => {
+        const key = h.name.trim().toLowerCase();
+        if (isHabitDoneToday(m.name, h.id) && !counted.has(key)) {
+          pts += 10; counted.add(key);
+        }
+        // streak bonus
+        let streak=0; let lbOff=0;
+        while(true){const k=localDateOffset(lbOff);if(!habitLogs.some(l=>l.member_name===m.name&&l.habit_id===h.id&&l.log_date===k))break;streak++;lbOff++;}
+        if (!counted.has('s_'+key)) { pts += streak*2; counted.add('s_'+key); }
+      });
+    });
+    const pCh = getMyPrimaryChallenge(m.name);
+    const done = pCh ? pCh.habits.filter(h=>isHabitDoneToday(m.name,h.id)).length : 0;
+    const total = pCh ? pCh.habits.length : 0;
+    return {...m, pts, done, total, chCount:myChs.length};
+  }).sort((a,b)=>b.pts-a.pts);
+
+  const rankCls=['rank-1','rank-2','rank-3','',''];
+  document.getElementById('lb-list').innerHTML = scores.map((m,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank ${rankCls[i]||''}">${i+1}</div>
+      ${avEl(m)}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;color:var(--text)">${m.name}${m.name===currentMember?' <span style="font-size:9px;color:var(--accent)">· you</span>':''}</div>
+        <div style="font-size:11px;color:var(--text3)">${m.done}/${m.total} habits · ${m.chCount} challenge${m.chCount!==1?'s':''}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lb-pts">${m.pts}</div>
+        <div style="font-size:9px;color:var(--text3)">pts</div>
+      </div>
+    </div>`).join('');
+
+  const refCh = (currentMember && getMyPrimaryChallenge(currentMember)) || allChallenges[0];
+  if (!refCh) { document.getElementById('habit-grid').innerHTML='<p style="color:var(--text3);font-size:12px">No active challenge</p>';return; }
+  const cols = allMembers.map(m=>`<th style="font-size:10px;color:var(--text3);padding:4px 7px;text-align:center">${avEl(m,22)}</th>`).join('');
+  const rows = refCh.habits.map(h=>{
+    const cells = allMembers.map(m=>{
+      const done = getSiblingHabitIds(m.name,h.id).some(sid=>isHabitDoneToday(m.name,sid));
+      return `<td style="text-align:center;padding:4px 7px"><div style="width:13px;height:13px;border-radius:3px;margin:0 auto;background:${done?'var(--accent)':'var(--bg4)'}"></div></td>`;
+    }).join('');
+    return `<tr><td style="font-size:11px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);white-space:nowrap;padding-right:10px">${h.name}</td>${cells}</tr>`;
+  }).join('');
+  document.getElementById('habit-grid').innerHTML = `<table style="width:100%;border-collapse:collapse;min-width:300px"><thead><tr><th style="text-align:left;font-size:10px;color:var(--text3);padding-bottom:5px">${refCh.name}</th>${cols}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+/* ══════════════════════════════════════════════
+   CHALLENGES
+══════════════════════════════════════════════ */
+function switchChTab(tab) {
+  chTab = tab;
+  document.getElementById('tab-active').classList.toggle('active',tab==='active');
+  document.getElementById('tab-history').classList.toggle('active',tab==='history');
+  document.getElementById('ch-active-panel').style.display = tab==='active'?'block':'none';
+  document.getElementById('ch-history-panel').style.display = tab==='history'?'block':'none';
+  if (tab==='active') renderActiveChallenges();
+  else renderChallengeHistory();
+}
+
+function renderChallenges() { switchChTab('active'); }
+
+function renderActiveChallenges() {
+  if (!allChallenges.length) {
+    document.getElementById('ch-list').innerHTML='<div class="empty"><div class="empty-title">No active challenges</div><div class="empty-sub">Build one!</div></div>'; return;
+  }
+  document.getElementById('ch-list').innerHTML = allChallenges.map(ch=>{
+    const pct = Math.round(ch.current_day/ch.days*100);
+    const tags = ch.habits.map(h=>`<span class="badge b-${h.cat}" style="margin:2px">${h.name}</span>`).join('');
+    const enrolled = currentMember && isEnrolled(currentMember,ch.id);
+    const enrolledMembers = allMembers.filter(m=>{
+      const e=getMemberEnrollments(m.name);
+      return e.includes(ch.id);
+    });
+    const avatarRow = enrolledMembers.slice(0,6).map(m=>`<div class="av" style="width:20px;height:20px;font-size:8px;background:${m.av}22;color:${m.av};border:1.5px solid ${m.av}44;margin-right:-3px">${m.name[0].toUpperCase()}</div>`).join('');
+    return `<div class="ch-card${enrolled?' joined':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:9px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0"><div class="ch-name">${ch.name}</div><div style="font-size:11px;color:var(--text3)">Started ${ch.start_date||'recently'} · Day ${ch.current_day} of ${ch.days}</div></div>
+        <div style="text-align:right;flex-shrink:0"><div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--accent)">${pct}%</div><div style="font-size:10px;color:var(--text3)">${ch.days-ch.current_day}d left</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px"><div class="pbar"><div class="pfill" style="width:${pct}%;background:var(--accent)"></div></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:11px">${tags}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;padding-top:9px;border-top:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:5px">
+          <div style="display:flex">${avatarRow}</div>
+          <span style="font-size:10px;color:var(--text3);margin-left:6px">${enrolledMembers.length} member${enrolledMembers.length!==1?'s':''}</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${currentMember?`<button class="btn btn-sm${enrolled?' btn-accent':''}" onclick="handleEnroll('${ch.id}')">${enrolled?'✓ Joined':'Join'}</button>`:''}
+          <button class="btn btn-sm" onclick="completeChallenge('${ch.id}')">Complete</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteChallenge('${ch.id}')">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function renderChallengeHistory() {
+  const {data} = await sb.from('challenge_history').select('*').order('created_at',{ascending:false});
+  const hist = data || [];
+  if (!hist.length) { document.getElementById('ch-history-list').innerHTML='<div class="empty"><div class="empty-title">No history yet</div><div class="empty-sub">Completed or deleted challenges appear here</div></div>';return; }
+  document.getElementById('ch-history-list').innerHTML = hist.map(ch=>`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;opacity:.85">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--text2)">${ch.name}</div><div style="font-size:11px;color:var(--text3)">${ch.days} days · reached day ${ch.current_day} · ${ch.archived_at||''}</div></div>
+        <div>${ch.status==='completed'?'<span class="hist-done">✓ Completed</span>':'<span class="hist-del">✕ Deleted</span>'}</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">${(ch.habits||[]).map(h=>`<span class="badge b-${h.cat}">${h.name}</span>`).join('')}</div>
+    </div>`).join('');
+}
+
+async function handleEnroll(chId) {
+  if (!currentMember) return;
+  if (isEnrolled(currentMember,chId)) {
+    await sb.from('enrollments').delete().eq('member_name',currentMember).eq('challenge_id',chId);
+    allEnrollments = allEnrollments.filter(e=>!(e.member_name===currentMember&&e.challenge_id===chId));
+    toast('Left challenge');
+  } else {
+    const {data} = await sb.from('enrollments').insert({member_name:currentMember,challenge_id:chId}).select().single();
+    if (data) allEnrollments.push(data);
+    toast('Joined challenge!');
+  }
+  renderActiveChallenges(); renderToday();
+}
+
+async function completeChallenge(id) {
+  if (!confirm('Mark as completed and move to history?')) return;
+  const ch = allChallenges.find(c=>c.id===id); if (!ch) return;
+  await sb.from('challenge_history').insert({...ch,status:'completed',archived_at:TODAY});
+  await sb.from('challenges').delete().eq('id',id);
+  await sb.from('enrollments').delete().eq('challenge_id',id);
+  allChallenges = allChallenges.filter(c=>c.id!==id);
+  allEnrollments = allEnrollments.filter(e=>e.challenge_id!==id);
+  toast('Challenge completed! 🏆'); renderActiveChallenges(); renderToday();
+}
+
+async function deleteChallenge(id) {
+  if (!confirm('Delete this challenge? It will be saved in history.')) return;
+  const ch = allChallenges.find(c=>c.id===id); if (!ch) return;
+  await sb.from('challenge_history').insert({...ch,status:'deleted',archived_at:TODAY});
+  await sb.from('challenges').delete().eq('id',id);
+  await sb.from('enrollments').delete().eq('challenge_id',id);
+  allChallenges = allChallenges.filter(c=>c.id!==id);
+  allEnrollments = allEnrollments.filter(e=>e.challenge_id!==id);
+  toast('Deleted and archived.'); renderActiveChallenges(); renderToday();
+}
+
+/* ══════════════════════════════════════════════
+   BUILD
+══════════════════════════════════════════════ */
+function renderBuild() {
+  document.getElementById('preset-grid').innerHTML = PRESETS.map((p,i)=>`<button class="preset-chip${selectedPresets.has(i)?' selected':''}" id="pc-${i}" onclick="togglePreset(${i})">${p.name}</button>`).join('');
+  document.getElementById('cat-tags').innerHTML = CATS.map(c=>`<button class="cat-tag${selectedCat===c?' sel-'+c:''}" onclick="selCat('${c}',this)">${c}</button>`).join('');
+  renderHabitsPreview();
+}
+function togglePreset(i){
+  if(selectedPresets.has(i)){selectedPresets.delete(i);newHabits=newHabits.filter(h=>h._pi!==i);}
+  else{selectedPresets.add(i);newHabits.push({...PRESETS[i],id:'p'+i+Date.now(),_pi:i});}
+  document.querySelectorAll('.preset-chip').forEach((el,idx)=>el.classList.toggle('selected',selectedPresets.has(idx)));
+  renderHabitsPreview();
+}
+function selCat(id,el){selectedCat=id;document.querySelectorAll('.cat-tag').forEach(b=>b.className='cat-tag');el.className=`cat-tag sel-${id}`;}
+function freqChange(){document.getElementById('freq-days-wrap').style.display=document.getElementById('h-freq').value==='weekly_x'?'block':'none';}
+function addCustomHabit(){
+  const name=document.getElementById('h-name').value.trim();if(!name){toast('Enter a name');return;}
+  newHabits.push({id:'c'+Date.now(),name,cat:selectedCat,freq:document.getElementById('h-freq').value,dpw:parseInt(document.getElementById('h-dpw').value)||5,target:document.getElementById('h-target').value.trim(),strict:parseInt(document.getElementById('h-strict').value)});
+  document.getElementById('h-name').value='';document.getElementById('h-target').value='';
+  toast('Habit added!');renderHabitsPreview();
+}
+function removeBuiltHabit(id){
+  const h=newHabits.find(x=>x.id===id);if(h&&h._pi!==undefined){selectedPresets.delete(h._pi);document.getElementById('pc-'+h._pi)?.classList.remove('selected');}
+  newHabits=newHabits.filter(x=>x.id!==id);renderHabitsPreview();
+}
+function renderHabitsPreview(){
+  const wrap=document.getElementById('save-ch-wrap');
+  const list=document.getElementById('habits-preview');
+  if(!newHabits.length){list.innerHTML='<div class="empty" style="padding:18px"><div class="empty-sub">Add habits using presets or the form</div></div>';wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML=newHabits.map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);gap:7px"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;color:var(--text)">${h.name}${h.target?` <span style="font-weight:400;color:var(--text3)">· ${h.target}</span>`:''}</div><div style="font-size:11px;color:var(--text3);margin-top:2px">${freqLabel(h)} &nbsp;${badge(h.cat)}</div></div><button class="btn btn-danger btn-sm" onclick="removeBuiltHabit('${h.id}')">✕</button></div>`).join('');
+}
+function loadTmpl(key){
+  const t=TEMPLATES[key];if(!t)return;
+  newHabits=t.pi.map(i=>({...PRESETS[i],id:'t'+i+Date.now(),_pi:i}));
+  selectedPresets=new Set(t.pi);
+  document.getElementById('b-name').value=t.name;document.getElementById('b-days').value=t.days;
+  document.querySelectorAll('.preset-chip').forEach((el,i)=>el.classList.toggle('selected',t.pi.includes(i)));
+  toast(t.name+' loaded!');renderHabitsPreview();
+}
+async function saveChallenge(){
+  const name=document.getElementById('b-name').value.trim()||'New Challenge';
+  const days=parseInt(document.getElementById('b-days').value)||75;
+  const start=document.getElementById('b-start').value.trim()||TODAY;
+  if(!newHabits.length){toast('Add at least one habit');return;}
+  const id='ch'+Date.now();
+  const {data,error}=await sb.from('challenges').insert({id,name,days,current_day:1,start_date:start,status:'active',habits:newHabits.map(h=>({...h}))}).select().single();
+  if(error){toast('Error: '+error.message);return;}
+  allChallenges.push({...data,habits:data.habits||[]});
+  newHabits=[];selectedPresets.clear();
+  document.getElementById('b-name').value='';document.getElementById('b-days').value='75';document.getElementById('b-start').value='';
+  document.querySelectorAll('.preset-chip').forEach(el=>el.classList.remove('selected'));
+  renderHabitsPreview();toast(name+' activated!');
+  setTimeout(()=>showPage('challenges'),900);
+}
+
+/* ══════════════════════════════════════════════
+   SQUAD
+══════════════════════════════════════════════ */
+function renderSquad(){
+  const isAdmin = allMembers.find(m=>m.name===currentMember)?.is_admin;
+  document.getElementById('squad-sub').textContent=`${allMembers.length} member${allMembers.length!==1?'s':''} in the squad`;
+  document.getElementById('squad-list').innerHTML=allMembers.map((m,i)=>{
+    const pCh=getMyPrimaryChallenge(m.name);
+    const done=pCh?pCh.habits.filter(h=>isHabitDoneToday(m.name,h.id)).length:0;
+    const total=pCh?pCh.habits.length:0;
+    const pinStatus = m.pin_hash
+      ? '<span style="font-size:10px;color:var(--accent)">🔒 PIN set</span>'
+      : '<span style="font-size:10px;color:var(--text3)">⚠️ No PIN</span>';
+    const canEdit = m.name === currentMember || isAdmin;
+    const canRemove = isAdmin && m.name !== currentMember;
+    return `<div class="member-card">
+      <div class="av" style="width:44px;height:44px;font-size:17px;background:${m.av}22;color:${m.av};border:2px solid ${m.av}44;flex-shrink:0">${m.name[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:500;color:var(--text)">${m.name}${m.is_admin?'<span class="admin-badge" style="margin-left:6px">Admin</span>':''}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap">
+          <span>${total?`${done}/${total} habits today`:'No challenge'}</span>
+          ${pinStatus}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+        ${canEdit?`<button class="btn btn-sm" onclick="openEditMember('${m.name}')">Edit</button>`:''}
+        ${isAdmin&&m.pin_hash?`<button class="btn btn-sm" onclick="adminResetPin('${m.name}')">Reset PIN</button>`:''}
+        ${canRemove?`<button class="btn btn-danger btn-sm" onclick="removeMember('${m.name}')">Remove</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function adminResetPin(name) {
+  if (!confirm(`Reset ${name}'s PIN? They'll be asked to create a new one next login.`)) return;
+  await sb.from('members').update({ pin_hash: null }).eq('name', name);
+  localStorage.removeItem('sf_session_' + name);
+  const idx = allMembers.findIndex(m => m.name === name);
+  if (idx >= 0) allMembers[idx].pin_hash = null;
+  toast(`${name}'s PIN has been reset`);
+  renderSquad();
+}
+
+/* ══════════════════════════════════════════════
+   MEMBER MODAL
+══════════════════════════════════════════════ */
+function buildColorPicker(){
+  document.getElementById('color-picker').innerHTML=COLORS.map(c=>`<div class="cswatch${c===selectedColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('');
+}
+function pickColor(c){selectedColor=c;buildColorPicker();updateMPreview();}
+function updateMPreview(){
+  const name=document.getElementById('m-name').value||'?';
+  const av=document.getElementById('m-preview-av');
+  Object.assign(av.style,{background:selectedColor+'22',color:selectedColor,border:`2px solid ${selectedColor}44`,width:'42px',height:'42px',fontSize:'17px'});
+  av.textContent=name[0].toUpperCase();
+  document.getElementById('m-preview-name').textContent=name.trim()||'Your name here';
+}
+function openAddMember(){mModalMode='add';editingMemberName=null;selectedColor=COLORS[0];document.getElementById('member-modal-title').textContent='Add member';document.getElementById('m-name').value='';document.getElementById('member-modal-err').style.display='none';buildColorPicker();updateMPreview();document.getElementById('member-modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),80);}
+function openAddMemberFromSelect(){openAddMember();}
+function openEditMember(name){
+  const m=allMembers.find(x=>x.name===name);if(!m)return;
+  mModalMode='edit';editingMemberName=name;selectedColor=m.av;
+  document.getElementById('member-modal-title').textContent='Edit member';document.getElementById('m-name').value=m.name;document.getElementById('member-modal-err').style.display='none';
+  buildColorPicker();updateMPreview();document.getElementById('member-modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),80);
+}
+async function saveMember(){
+  const name=document.getElementById('m-name').value.trim();
+  const errEl=document.getElementById('member-modal-err');
+  errEl.style.display='none';
+  if(!name){errEl.textContent='Enter a name';errEl.style.display='block';return;}
+  if(mModalMode==='add'){
+    if(allMembers.find(m=>m.name.toLowerCase()===name.toLowerCase())){errEl.textContent='Name already taken';errEl.style.display='block';return;}
+    const {data,error}=await sb.from('members').insert({name,av:selectedColor}).select().single();
+    if(error){errEl.textContent=error.message;errEl.style.display='block';return;}
+    allMembers.push(data);toast(name+' added!');
+  } else {
+    const old=allMembers.find(m=>m.name===editingMemberName);if(!old)return;
+    if(name!==old.name&&allMembers.find(m=>m.name.toLowerCase()===name.toLowerCase())){errEl.textContent='Name already taken';errEl.style.display='block';return;}
+    await sb.from('members').update({name,av:selectedColor}).eq('name',editingMemberName);
+    // cascade name change in logs if name changed
+    if(name!==editingMemberName){
+      await Promise.all([
+        sb.from('habit_logs').update({member_name:name}).eq('member_name',editingMemberName),
+        sb.from('food_logs').update({member_name:name}).eq('member_name',editingMemberName),
+        sb.from('enrollments').update({member_name:name}).eq('member_name',editingMemberName),
+        sb.from('calorie_goals').update({member_name:name}).eq('member_name',editingMemberName)
+      ]);
+      if(currentMember===editingMemberName){currentMember=name;document.getElementById('sb-name').textContent=name;}
+      habitLogs=habitLogs.map(l=>l.member_name===editingMemberName?{...l,member_name:name}:l);
+    }
+    const idx=allMembers.findIndex(m=>m.name===editingMemberName);
+    if(idx>=0)allMembers[idx]={...allMembers[idx],name,av:selectedColor};
+    toast('Updated!');
+  }
+  closeModal('member-modal');renderSquad();renderMemberGrid();
+}
+async function removeMember(name){
+  if(allMembers.length<=1){toast("Can't remove last member");return;}
+  if(!confirm(`Remove ${name}? All their data will be deleted.`))return;
+  await Promise.all([
+    sb.from('members').delete().eq('name',name),
+    sb.from('habit_logs').delete().eq('member_name',name),
+    sb.from('food_logs').delete().eq('member_name',name),
+    sb.from('enrollments').delete().eq('member_name',name),
+    sb.from('calorie_goals').delete().eq('member_name',name)
+  ]);
+  allMembers=allMembers.filter(m=>m.name!==name);
+  habitLogs=habitLogs.filter(l=>l.member_name!==name);
+  if(currentMember===name){goHome();return;}
+  toast(name+' removed');renderSquad();renderMemberGrid();
+}
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach((n,i)=>{
+    const ids=['today','calories','leaderboard','challenges','build','squad','progress'];
+    n.classList.toggle('active',ids[i]===id);
+  });
+  if(id==='today') renderToday();
+  else if(id==='calories') renderCalories();
+  else if(id==='leaderboard') renderLeaderboard();
+  else if(id==='challenges') renderChallenges();
+  else if(id==='build') renderBuild();
+  else if(id==='squad') renderSquad();
+  else if(id==='progress') renderProgress();
+}
+function mnavActive(el){document.querySelectorAll('.mnav-item').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function closeModalOutside(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+
+/* ══════════════════════════════════════════════
+   PROGRESS PAGE
+══════════════════════════════════════════════ */
+let progRangeDays = 7;
+let progCharts = {};
+let progCustomFrom = null;
+let progCustomTo = null;
+let cachedHabitLogs = [];
+let cachedFoodLogs = [];
+
+function setProgRange(days, btn) {
+  progRangeDays = days;
+  progCustomFrom = null; progCustomTo = null;
+  document.getElementById('prog-date-from').value = '';
+  document.getElementById('prog-date-to').value = '';
+  document.querySelectorAll('.prog-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  cachedHabitLogs = []; cachedFoodLogs = [];
+  renderProgress();
+}
+
+function applyCustomRange() {
+  const from = document.getElementById('prog-date-from').value;
+  const to = document.getElementById('prog-date-to').value;
+  if (from && to && from <= to) {
+    progCustomFrom = from; progCustomTo = to;
+    document.querySelectorAll('.prog-range-btn').forEach(b => b.classList.remove('active'));
+    renderProgress();
+  }
+}
+
+function destroyCharts() {
+  Object.values(progCharts).forEach(c => { try { c.destroy(); } catch(e){} });
+  progCharts = {};
+}
+
+function getDateRange() {
+  if (progCustomFrom && progCustomTo) {
+    const dates = []; const cur = new Date(progCustomFrom + 'T12:00:00');
+    const end = new Date(progCustomTo + 'T12:00:00');
+    while (cur <= end) { dates.push(localDateStr(cur)); cur.setDate(cur.getDate()+1); }
+    return dates;
+  }
+  const days = progRangeDays;
+  const dates = [], end = new Date();
+  const start = days === 0 ? new Date('2020-01-01') : new Date();
+  if (days > 0) start.setDate(start.getDate() - (days-1));
+  const cur = new Date(start);
+  while (cur <= end) { dates.push(localDateStr(cur)); cur.setDate(cur.getDate()+1); }
+  return dates;
+}
+
+function shortDate(dateStr) {
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+
+async function renderProgress() {
+  if (!currentMember) return;
+  destroyCharts();
+
+  const ch = getMyPrimaryChallenge(currentMember);
+  const allHabits = ch ? ch.habits : [];
+
+  if (!cachedHabitLogs.length) {
+    const [hlRes, flRes] = await Promise.all([
+      sb.from('habit_logs').select('*').eq('member_name', currentMember),
+      sb.from('food_logs').select('*').eq('member_name', currentMember)
+    ]);
+    cachedHabitLogs = hlRes.data || [];
+    cachedFoodLogs = flRes.data || [];
+  }
+
+  // populate habit filter
+  const habitFilter = document.getElementById('prog-habit-filter');
+  const curVal = habitFilter.value;
+  habitFilter.innerHTML = '<option value="all">All habits</option>' +
+    allHabits.map(h=>`<option value="${h.id}"${curVal===h.id?' selected':''}>${h.name}</option>`).join('');
+
+  const selectedHabit = habitFilter.value;
+  const viewFilter = document.getElementById('prog-view-filter').value;
+  const allHabitLogs = selectedHabit==='all' ? cachedHabitLogs : cachedHabitLogs.filter(l=>l.habit_id===selectedHabit);
+  const habits = selectedHabit==='all' ? allHabits : allHabits.filter(h=>h.id===selectedHabit);
+  const allFoodLogs = cachedFoodLogs;
+  const dates = getDateRange();
+
+  const rangeLabel = progCustomFrom
+    ? `${shortDate(progCustomFrom)} – ${shortDate(progCustomTo)}`
+    : {7:'Last 7 days',30:'Last 30 days',90:'Last 90 days',0:'All time'}[progRangeDays];
+
+  document.getElementById('progress-title').textContent = currentMember + "'s Progress";
+  document.getElementById('progress-sub').textContent = rangeLabel + (selectedHabit!=='all'?' · '+(habits[0]?.name||''):'');
+
+  const showHabits = viewFilter==='all'||viewFilter==='habits';
+  const showCals   = viewFilter==='all'||viewFilter==='calories';
+  const showPts    = viewFilter==='all'||viewFilter==='points';
+  document.getElementById('prog-section-habits').style.display   = showHabits?'block':'none';
+  document.getElementById('prog-section-calories').style.display = showCals?'block':'none';
+  document.getElementById('prog-section-points').style.display   = showPts?'block':'none';
+
+  // stat strip
+  const rangeLogs = allHabitLogs.filter(l=>dates.includes(l.log_date));
+  const totalDaysActive = new Set(rangeLogs.map(l=>l.log_date)).size;
+  let bestStreak=0;
+  habits.forEach(h=>{
+    let s=0,off=0;
+    while(true){if(!cachedHabitLogs.some(l=>l.habit_id===h.id&&l.log_date===localDateOffset(off)))break;s++;off++;}
+    if(s>bestStreak)bestStreak=s;
+  });
+  const rangeFood = allFoodLogs.filter(f=>dates.includes(f.log_date));
+  const avgCals = rangeFood.length ? Math.round(rangeFood.reduce((a,f)=>a+f.calories,0)/Math.max(1,new Set(rangeFood.map(f=>f.log_date)).size)) : 0;
+
+  document.getElementById('progress-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Days active</div><div class="metric-val c-accent">${totalDaysActive}</div><div class="metric-sub">${rangeLabel}</div></div>
+    <div class="metric"><div class="metric-label">Check-ins</div><div class="metric-val c-blue">${rangeLogs.length}</div><div class="metric-sub">habit completions</div></div>
+    <div class="metric"><div class="metric-label">Best streak</div><div class="metric-val c-orange">${bestStreak}d</div><div class="metric-sub">current</div></div>
+    <div class="metric"><div class="metric-label">Avg calories</div><div class="metric-val c-pink">${avgCals}</div><div class="metric-sub">per logged day</div></div>`;
+
+  const cd = {
+    plugins:{legend:{labels:{color:'#888',font:{family:'DM Sans',size:11},boxWidth:12}}},
+    scales:{x:{ticks:{color:'#555',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+            y:{ticks:{color:'#555',font:{size:10}},grid:{color:'rgba(255,255,255,0.06)'}}}
+  };
+
+  if (showHabits) {
+    if(document.getElementById('heatmap-label'))
+      document.getElementById('heatmap-label').textContent = selectedHabit!=='all'?`Filtered: ${habits[0]?.name}`:'All habits';
+
+    // heatmap
+    const heatDates = (() => {
+      const d2=[], e=new Date(), s=new Date(); s.setDate(s.getDate()-(Math.max(progRangeDays===0?365:progRangeDays,28)-1));
+      const c=new Date(s); while(c<=e){d2.push(localDateStr(c));c.setDate(c.getDate()+1);} return d2;
+    })();
+    const dcm={};
+    allHabitLogs.forEach(l=>{if(!dcm[l.log_date])dcm[l.log_date]=new Set();dcm[l.log_date].add(l.habit_id);});
+    const mpd=habits.length||1, weeks=[], hc=['var(--bg4)','#1a3a0a','#2d6614','#4a9e1f','#c8f135'];
+    let wk=[];
+    const fd=new Date(heatDates[0]+'T12:00:00');
+    for(let i=0;i<fd.getDay();i++)wk.push(null);
+    heatDates.forEach(d=>{wk.push(d);if(wk.length===7){weeks.push(wk);wk=[];}});
+    if(wk.length){while(wk.length<7)wk.push(null);weeks.push(wk);}
+    document.getElementById('heatmap-wrap').innerHTML=`<div style="display:flex;gap:2px">
+      <div style="display:flex;flex-direction:column;gap:3px;margin-right:4px">
+        ${['S','M','T','W','T','F','S'].map(l=>`<div style="font-size:9px;color:var(--text3);height:12px;line-height:12px">${l}</div>`).join('')}
+      </div>
+      ${weeks.map(w=>`<div style="display:flex;flex-direction:column;gap:3px">${w.map(d=>{
+        if(!d)return`<div style="width:12px;height:12px"></div>`;
+        const cnt=dcm[d]?dcm[d].size:0,int=cnt===0?0:Math.min(4,Math.ceil(cnt/mpd*4));
+        return`<div class="heatmap-cell" style="background:${hc[int]};${d===TODAY?'outline:1px solid var(--accent);':''}" title="${shortDate(d)}: ${cnt}"></div>`;
+      }).join('')}</div>`).join('')}
+    </div>`;
+
+    // habit bar
+    const dd=dates.length>30?dates.filter((_,i)=>i%Math.ceil(dates.length/30)===0):dates;
+    const cd2=dd.map(d=>{if(!habits.length)return 0;return Math.round(habits.filter(h=>allHabitLogs.some(l=>l.habit_id===h.id&&l.log_date===d)).length/habits.length*100);});
+    progCharts.habitBar=new Chart(document.getElementById('chart-habit-bar').getContext('2d'),{
+      type:'bar',data:{labels:dd.map(shortDate),datasets:[{label:'Completion %',data:cd2,borderRadius:3,borderSkipped:false,
+        backgroundColor:cd2.map(v=>v>=80?'#c8f135':v>=50?'#4db6ac':v>0?'#4fc3f7':'#222')}]},
+      options:{...cd,responsive:true,maintainAspectRatio:false,
+        scales:{...cd.scales,y:{...cd.scales.y,min:0,max:100,ticks:{...cd.scales.y.ticks,callback:v=>v+'%'}}}}
+    });
+
+    // habit pie
+    const pc=['#c8f135','#4fc3f7','#f06292','#ce93d8','#ff8c42','#4db6ac','#ffd54f','#81c784','#ef5350','#90a4ae'];
+    progCharts.habitPie=new Chart(document.getElementById('chart-habit-pie').getContext('2d'),{
+      type:'doughnut',data:{labels:habits.map(h=>h.name.length>18?h.name.slice(0,16)+'…':h.name),
+        datasets:[{data:habits.map(h=>allHabitLogs.filter(l=>l.habit_id===h.id&&dates.includes(l.log_date)).length),backgroundColor:pc,borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+        plugins:{legend:{position:'right',labels:{color:'#888',font:{family:'DM Sans',size:10},boxWidth:10,padding:8}}}}
+    });
+
+    renderHabitTable(habits, cachedHabitLogs);
+  }
+
+  if (showCals) {
+    const calD=dates.length>30?dates.filter((_,i)=>i%Math.ceil(dates.length/30)===0):dates;
+    const cbd=calD.map(d=>allFoodLogs.filter(f=>f.log_date===d).reduce((a,f)=>a+f.calories,0));
+    progCharts.calBar=new Chart(document.getElementById('chart-cal-bar').getContext('2d'),{
+      type:'bar',data:{labels:calD.map(shortDate),datasets:[
+        {label:'Calories',data:cbd,borderRadius:3,borderSkipped:false,backgroundColor:cbd.map(v=>!v?'#222':v<=myCalGoal?'#c8f135':'#ef5350')},
+        {label:'Goal',data:calD.map(()=>myCalGoal),type:'line',borderColor:'#ff8c42',borderWidth:1.5,borderDash:[4,3],pointRadius:0,fill:false}
+      ]},
+      options:{...cd,responsive:true,maintainAspectRatio:false,scales:{...cd.scales,y:{...cd.scales.y,beginAtZero:true}}}
+    });
+    const tp=rangeFood.reduce((a,f)=>a+(f.protein||0),0),tc=rangeFood.reduce((a,f)=>a+(f.carbs||0),0),tf=rangeFood.reduce((a,f)=>a+(f.fat||0),0);
+    progCharts.macroPie=new Chart(document.getElementById('chart-macro-pie').getContext('2d'),{
+      type:'doughnut',data:{labels:['Protein','Carbs','Fat'],datasets:[{data:[Math.round(tp),Math.round(tc),Math.round(tf)],backgroundColor:['#ef9a9a','#80cbc4','#ffcc80'],borderWidth:0,hoverOffset:6}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:'#888',font:{family:'DM Sans',size:11},boxWidth:10,padding:10}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}g`}}}}
+    });
+    const mbd=calD.map(d=>{const fl=allFoodLogs.filter(f=>f.log_date===d);return{p:Math.round(fl.reduce((a,f)=>a+(f.protein||0),0)),c:Math.round(fl.reduce((a,f)=>a+(f.carbs||0),0)),f:Math.round(fl.reduce((a,f)=>a+(f.fat||0),0))};});
+    progCharts.macroBar=new Chart(document.getElementById('chart-macro-bar').getContext('2d'),{
+      type:'bar',data:{labels:calD.map(shortDate),datasets:[
+        {label:'Protein',data:mbd.map(d=>d.p),backgroundColor:'#ef9a9a',stack:'a',borderRadius:0},
+        {label:'Carbs',data:mbd.map(d=>d.c),backgroundColor:'#80cbc4',stack:'a',borderRadius:0},
+        {label:'Fat',data:mbd.map(d=>d.f),backgroundColor:'#ffcc80',stack:'a',borderRadius:3}
+      ]},
+      options:{...cd,responsive:true,maintainAspectRatio:false,
+        scales:{...cd.scales,x:{...cd.scales.x,stacked:true},y:{...cd.scales.y,stacked:true,beginAtZero:true}}}
+    });
+  }
+
+  if (showPts) {
+    const pd=dates.length>60?dates.filter((_,i)=>i%Math.ceil(dates.length/60)===0):dates;
+    let cum=0;
+    const pdata=pd.map(d=>{const s=new Set(allHabitLogs.filter(l=>l.log_date===d).map(l=>l.habit_name?.toLowerCase?.()||l.habit_id));cum+=s.size*10;return cum;});
+    progCharts.pointsLine=new Chart(document.getElementById('chart-points-line').getContext('2d'),{
+      type:'line',data:{labels:pd.map(shortDate),datasets:[{label:'Cumulative points',data:pdata,borderColor:'#c8f135',backgroundColor:'rgba(200,241,53,0.06)',borderWidth:2,pointRadius:pd.length>30?0:3,pointBackgroundColor:'#c8f135',fill:true,tension:0.4}]},
+      options:{...cd,responsive:true,maintainAspectRatio:false,scales:{...cd.scales,y:{...cd.scales.y,beginAtZero:true}}}
+    });
+    const daily=pd.map(d=>{const s=new Set(allHabitLogs.filter(l=>l.log_date===d).map(l=>l.habit_name?.toLowerCase?.()||l.habit_id));return s.size*10;});
+    progCharts.pointsDaily=new Chart(document.getElementById('chart-points-daily').getContext('2d'),{
+      type:'bar',data:{labels:pd.map(shortDate),datasets:[{label:'Points earned',data:daily,backgroundColor:'rgba(200,241,53,0.5)',borderColor:'#c8f135',borderWidth:1,borderRadius:3,borderSkipped:false}]},
+      options:{...cd,responsive:true,maintainAspectRatio:false,scales:{...cd.scales,y:{...cd.scales.y,beginAtZero:true}}}
+    });
+  }
+}
+
+function renderHabitTable(habits, allHabitLogs) {
+  if(!habits){const ch=getMyPrimaryChallenge(currentMember);habits=ch?ch.habits:[];allHabitLogs=cachedHabitLogs;}
+  const sortKey=document.getElementById('habit-sort')?.value||'streak';
+  const stats=habits.map(h=>{
+    let streak=0,off=0;
+    while(true){if(!cachedHabitLogs.some(l=>l.habit_id===h.id&&l.log_date===localDateOffset(off)))break;streak++;off++;}
+    const sd=[...new Set((allHabitLogs.filter(l=>l.habit_id===h.id)).map(l=>l.log_date))].sort();
+    let best=0,cur=0,prev=null;
+    sd.forEach(d=>{if(prev){const diff=(new Date(d)-new Date(prev))/86400000;cur=diff===1?cur+1:1;}else{cur=1;}if(cur>best)best=cur;prev=d;});
+    return{name:h.name,cat:h.cat,total:allHabitLogs.filter(l=>l.habit_id===h.id).length,streak,best};
+  });
+  const sorted=[...stats].sort((a,b)=>sortKey==='streak'?b.streak-a.streak:sortKey==='best'?b.best-a.best:sortKey==='total'?b.total-a.total:a.name.localeCompare(b.name));
+  const mx=Math.max(...sorted.map(h=>h.total),1);
+  document.getElementById('progress-habit-table').innerHTML=sorted.length
+    ?sorted.map((h,i)=>`<div class="streak-table-row">
+      <div style="width:22px;font-family:'Bebas Neue',sans-serif;font-size:16px;color:${i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#cd7c54':'var(--text3)'}">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:500;color:var(--text)">${h.name}</span>
+          <span class="badge b-${h.cat}" style="font-size:9px">${h.cat}</span>
+        </div>
+        <div class="streak-bar-wrap"><div class="streak-bar-fill" style="width:${Math.round(h.total/mx*100)}%"></div></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-shrink:0;text-align:center;margin-left:8px">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent)">${h.streak}</div><div style="font-size:9px;color:var(--text3)">streak</div></div>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--blue)">${h.best}</div><div style="font-size:9px;color:var(--text3)">best</div></div>
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--text2)">${h.total}</div><div style="font-size:9px;color:var(--text3)">total</div></div>
+      </div>
+    </div>`).join('')
+    :'<div class="empty" style="padding:20px"><div class="empty-sub">No habit data yet</div></div>';
+}
+
+/* ══════════════════════════════════════════════
+   CHALLENGE RANKINGS
+══════════════════════════════════════════════ */
+function switchChTab(tab) {
+  chTab=tab;
+  ['active','history','rankings'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('ch-'+t+'-panel').style.display=t===tab?'block':'none';
+  });
+  if(tab==='active') renderActiveChallenges();
+  else if(tab==='history') renderChallengeHistory();
+  else if(tab==='rankings') renderRankingsSelector();
+}
+
+function renderRankingsSelector() {
+  const sel=document.getElementById('rankings-ch-select');
+  sel.innerHTML=allChallenges.length
+    ?allChallenges.map(ch=>`<option value="${ch.id}">${ch.name}</option>`).join('')
+    :'<option value="">No active challenges</option>';
+  if(allChallenges.length) renderRankings();
+  else document.getElementById('rankings-content').innerHTML='<div class="empty"><div class="empty-title">No challenges yet</div></div>';
+}
+
+async function renderRankings() {
+  const chId=document.getElementById('rankings-ch-select').value;
+  const ch=allChallenges.find(c=>c.id===chId);
+  if(!ch) return;
+  const container=document.getElementById('rankings-content');
+  container.innerHTML='<div class="loading"><div class="spinner"></div>Loading rankings...</div>';
+  const habitIds=ch.habits.map(h=>h.id);
+  const {data:logs}=await sb.from('habit_logs').select('*').in('habit_id',habitIds);
+  const allLogs=logs||[];
+  const enrolledMembers=allMembers.filter(m=>{const e=getMemberEnrollments(m.name);return e.includes(chId);});
+  const scores=enrolledMembers.map(m=>{
+    const ml=allLogs.filter(l=>l.member_name===m.name);
+    const daysActive=new Set(ml.map(l=>l.log_date)).size;
+    const total=ml.length;
+    const maxP=Math.max(1,ch.habits.length*ch.current_day);
+    const pct=Math.round(total/maxP*100);
+    let streak=0,off=0;
+    while(true){const k=localDateOffset(off);if(!ml.some(l=>l.log_date===k))break;streak++;off++;}
+    return{...m,pts:total*10+streak*2,total,daysActive,pct,streak};
+  }).sort((a,b)=>b.pts-a.pts);
+  const rankCls=['rank-1','rank-2','rank-3','',''];
+  const medals=['🥇','🥈','🥉'];
+  const habitRanks=ch.habits.map(h=>({
+    habit:h,
+    sorted:enrolledMembers.map(m=>({name:m.name,av:m.av,count:allLogs.filter(l=>l.member_name===m.name&&l.habit_id===h.id).length})).sort((a,b)=>b.count-a.count)
+  }));
+  container.innerHTML=`
+    <div class="card card-hi" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div><div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text)">${ch.name}</div>
+          <div style="font-size:11px;color:var(--text3)">Day ${ch.current_day} of ${ch.days} · ${enrolledMembers.length} members</div></div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent)">${Math.round(ch.current_day/ch.days*100)}%</div>
+      </div>
+      <div style="display:flex;gap:8px"><div class="pbar"><div class="pfill" style="width:${Math.round(ch.current_day/ch.days*100)}%;background:var(--accent)"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Overall standings</div>
+      ${scores.map((m,i)=>`<div class="lb-row" style="${m.name===currentMember?'background:var(--accent-dim2);margin:0 -18px;padding:12px 18px;border-radius:8px;':''}">
+        <div class="lb-rank ${rankCls[i]||''}">${i<3?medals[i]:i+1}</div>
+        <div class="av" style="width:34px;height:34px;font-size:13px;background:${m.av}22;color:${m.av};border:1.5px solid ${m.av}44">${m.name[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;color:var(--text)">${m.name}${m.name===currentMember?' <span style="font-size:9px;color:var(--accent)">· you</span>':''}</div>
+          <div style="font-size:11px;color:var(--text3)">${m.total} check-ins · ${m.daysActive}d active · ${m.streak}d streak</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)">${m.pts}</div>
+          <div style="font-size:9px;color:var(--text3)">pts</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:10px">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${m.pct>=80?'var(--accent2)':m.pct>=50?'var(--blue)':'var(--text3)'}">${m.pct}%</div>
+          <div style="font-size:9px;color:var(--text3)">complete</div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="section-label">Habit-by-habit rankings</div>
+      ${habitRanks.map(({habit,sorted})=>`
+        <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:500;color:var(--text)">${habit.name}</span>
+            <span class="badge b-${habit.cat}">${habit.cat}</span>
+            ${habit.target?`<span style="font-size:11px;color:var(--text3)">· ${habit.target}</span>`:''}
+          </div>
+          ${sorted.map((m,i)=>{
+            const pct=ch.current_day?Math.round(m.count/ch.current_day*100):0;
+            return`<div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+              <span style="font-size:11px;color:${i===0?'#fbbf24':i===1?'#94a3b8':i===2?'#cd7c54':'var(--text3)'};width:16px;text-align:center;font-weight:600">${i+1}</span>
+              <div class="av" style="width:22px;height:22px;font-size:9px;background:${m.av}22;color:${m.av};border:1.5px solid ${m.av}44">${m.name[0].toUpperCase()}</div>
+              <span style="font-size:12px;color:var(--text);min-width:60px">${m.name}</span>
+              <div class="pbar" style="height:5px"><div class="pfill" style="width:${pct}%;background:${m.av}"></div></div>
+              <span style="font-size:11px;color:var(--text2);white-space:nowrap;min-width:60px;text-align:right">${m.count}/${ch.current_day}d</span>
+            </div>`;
+          }).join('')}
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+const SF_URL = 'https://kgkgofrofifhpzuovoiu.supabase.co';
+const SF_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtna2dvZnJvZmlmaHB6dW92b2l1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwNjY0NjAsImV4cCI6MjA4OTY0MjQ2MH0.2Q7O_TY8VBg2sd9RR797Q1sjLEfEnM9sajsNPQZlEB0';
+
+async function init() {
+  const msgEl = document.getElementById('setup-msg');
+  const spinEl = document.getElementById('setup-spinner');
+  const retryBtn = document.getElementById('setup-retry-btn');
+  const setMsg = msg => { if (msgEl) msgEl.textContent = msg; };
+
+  // Reset state on retry
+  if (spinEl) spinEl.style.display = 'block';
+  if (retryBtn) retryBtn.style.display = 'none';
+  setMsg('Connecting...');
+
+  try {
+    sb = supabase.createClient(SF_URL, SF_KEY);
+    setMsg('Loading squad data...');
+    await loadAllData();
+    setupRealtime();
+    document.getElementById('setup-screen').style.display = 'none';
+    showMemberSelect();
+  } catch(e) {
+    if (spinEl) spinEl.style.display = 'none';
+    setMsg('Connection failed. Check your internet and try again.');
+    if (retryBtn) retryBtn.style.display = 'inline-block';
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
